@@ -70,3 +70,11 @@ Individual configurations can be made using the “Edit details” option. This 
 The order of the payment methods displayed, the descriptive text and the associated logo can also be customized. It is recommended to activate the function “Allow change of payment method after completion of the order”.
 
 If someone chooses Bitcoin as a payment method but later decides against it, they can easily switch to another option.
+
+### Shopware sales channel settings ###
+
+Within the sales channel, the configuration options for payment and shipping can be found under General basic settings, followed by Payment methods.
+
+Here you can select Bitcoin and Lightning as your payment method. As soon as this is done, these payment methods are activated and can be used in the store.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/shopware-payment-and-shipping.png)
