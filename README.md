@@ -26,3 +26,25 @@ All incoming Bitcoin payments are immediately forwarded and added to your Lightn
 Here at the Github page you will find all the payment modules provided by Coinsnap. On Coinsnap for Shopware you will find the green button labeled Code and if you click on it, the menu opens and Download ZIP appears. Here you can download the latest version of the Coinsnap plugin to your computer.
 
 ![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/github-coinsnap.jpg)
+
+### Connect Coinsnap account with Shopware plugin ###
+
+As soon as a Coinsnap account has been set up, we can start connecting Shopware to Coinsnap. The BTCPayShopware extension is available in the “My extensions” area.
+
+#### (1) Determination of the configuration process ####
+Click on the three dots on the right-hand side to start the configuration process.
+
+#### (2) Initialization of the configuration ####
+Click on Configure to start the configuration process.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/Photo2-12.35.49.png)
+
+The Coinsnap API Key and the Coinsnap Store ID must be stored in the configuration area.
+
+Go to the Settings menu item in the Coinsnap backend. There you will find the Coinsnap Store ID and the Coinsnap API Key in the Store Settings section.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/coinsnap-store.png)
+
+Then enter the Coinsnap API key and the Coinsnap store ID that you copied from the Coinsnap backend into Shopware.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/coinsnap-for-shopware-1.jpg)
