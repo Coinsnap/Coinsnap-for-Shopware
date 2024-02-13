@@ -48,3 +48,25 @@ Go to the Settings menu item in the Coinsnap backend. There you will find the Co
 Then enter the Coinsnap API key and the Coinsnap store ID that you copied from the Coinsnap backend into Shopware.
 
 ![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/coinsnap-for-shopware-1.jpg)
+
+### Shopware payment methods settings ###
+
+In the Settings section, you can navigate to the payment methods to change the notes for the various payment methods. Access is via the Settings menu, which also contains the Payment methods section.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/payment-methods.png)
+
+In addition to the standard payment options, Bitcoin and Lightning payment methods are also listed here, which are highlighted in blue when activated. You have the option of displaying the Bitcoin and Lightning payment methods separately or as a joint payment method. We recommend using it as a common payment method.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/pay-with-bitcoin.png)
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/pay-with-lightning.png)
+
+The end customer is then shown a QR code containing both Bitcoin and Lightning.
+Regardless of whether the user uses a Lightning or a Bitcoin wallet, payment is possible and unwanted terminations can be avoided.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/editing)
+
+Individual configurations can be made using the “Edit details” option. This can be used to change the display for the payer, e.g. to “Bitcoin” in our example.
+
+The order of the payment methods displayed, the descriptive text and the associated logo can also be customized. It is recommended to activate the function “Allow change of payment method after completion of the order”.
+
+If someone chooses Bitcoin as a payment method but later decides against it, they can easily switch to another option.
