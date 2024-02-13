@@ -63,7 +63,7 @@ In addition to the standard payment options, Bitcoin and Lightning payment metho
 The end customer is then shown a QR code containing both Bitcoin and Lightning.
 Regardless of whether the user uses a Lightning or a Bitcoin wallet, payment is possible and unwanted terminations can be avoided.
 
-![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/editing)
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/editing.png)
 
 Individual configurations can be made using the “Edit details” option. This can be used to change the display for the payer, e.g. to “Bitcoin” in our example.
 
