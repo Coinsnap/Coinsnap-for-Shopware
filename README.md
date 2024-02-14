@@ -2,48 +2,79 @@
 
 # Coinsnap for Shopware Payment Plugin
 
-**Accept Bitcoin and Lightning payment in Shopware with Coinsnap.**
-
-# Bitcoin & Lightning payment processing with Coinsnap.
+**Accept Bitcoin and Lightning payment in Shopware with Coinsnap**
 
 Coinsnap is a Lightning Payment Provider and offers Bitcoin and Lightning payment processing for retail stores and online stores.
 As a merchant, you only need a Lightning wallet with a Lightning address to receive Bitcoin and Lightning payments from your customers.
 
-**Advantages of using Coinsnap:**
+== Description ==
 
-- Not running an own Lightning node
-- Simple Integration
-- No chargeback risk, no chargebacks or fraud possible
-- Incoming payments are immediately credited to your own Lightning wallet
-- Optional: Credit to a bank account
+If you run a Shopware-based online store, integrating Bitcoin and Lightning payment options is easy with the Coinsnap Shopware plugin.
 
-# What does the Bitcoin extension offer?
+Simply install the Coinsnap Shopware plugin on Shopware version 6 or higher, link it to your Coinsnap account, and your customers will have the option to pay with Bitcoin and Lightning.
 
-- Quick and easy integration into your own store
-- Connection to Coinsnap is completely automated
-- The euro payment amount is calculated automatically using real-time Bitcoin exchange rates
-- In the checkout, the payer can choose between Bitcoin and Lightning.
+All incoming Bitcoin payments are immediately forwarded and added to your Lightning Wallet. The Coinsnap Shopware plugin, developed by Coincharge, is compatible with both BTCPay Server and Coinsnap for connectivity.
 
-# Shopware 6 Bitcoin extension.
-
-Accept Bitcoin and Lightning payments in your self-managed Shopware 6 online store.
-All you need is Coinsnap Account and a Lightning Wallet with an Lightning Address.
-
-# What does Coinsnap offer?
-
-Coinsnap provides the extension to allow Shopware Bitcoin payments to be processed through Coinsnap.
-
-The Shopware Bitcoin extension for Coinsnap is free of charge.
-
-On request, Coinsnap integrates the Bitcoin extension into your online store.
-
-## Support
+== Support ==
 
 - Installation instructions in English and German: https://coinsnap.io/en/coinsnap-for-shopware-payment-plugin/
 - Demo Store: https://shopware.coincharge.io/en/
 - Telegram Support: https://t.me/coinsnap_io
 
+## Installation of the Shopware plugin via Github ##
 
-## Licence
+Here at the Github page you will find all the payment modules provided by Coinsnap. On Coinsnap for Shopware you will find the green button labeled Code and if you click on it, the menu opens and Download ZIP appears. Here you can download the latest version of the Coinsnap plugin to your computer.
 
-The MIT License (MIT). Please see [License File] for more information.
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/github-coinsnap.jpg)
+
+### Connect Coinsnap account with Shopware plugin ###
+
+As soon as a Coinsnap account has been set up, we can start connecting Shopware to Coinsnap. The BTCPayShopware extension is available in the “My extensions” area.
+
+#### (1) Determination of the configuration process ####
+Click on the three dots on the right-hand side to start the configuration process.
+
+#### (2) Initialization of the configuration ####
+Click on Configure to start the configuration process.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/Photo2-12.35.49.png)
+
+The Coinsnap API Key and the Coinsnap Store ID must be stored in the configuration area.
+
+Go to the Settings menu item in the Coinsnap backend. There you will find the Coinsnap Store ID and the Coinsnap API Key in the Store Settings section.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/coinsnap-store.png)
+
+Then enter the Coinsnap API key and the Coinsnap store ID that you copied from the Coinsnap backend into Shopware.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/coinsnap-for-shopware-1.jpg)
+
+### Shopware payment methods settings ###
+
+In the Settings section, you can navigate to the payment methods to change the notes for the various payment methods. Access is via the Settings menu, which also contains the Payment methods section.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/payment-methods.png)
+
+In addition to the standard payment options, Bitcoin and Lightning payment methods are also listed here, which are highlighted in blue when activated. You have the option of displaying the Bitcoin and Lightning payment methods separately or as a joint payment method. We recommend using it as a common payment method.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/pay-with-bitcoin.png)
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/pay-with-lightning.png)
+
+The end customer is then shown a QR code containing both Bitcoin and Lightning.
+Regardless of whether the user uses a Lightning or a Bitcoin wallet, payment is possible and unwanted terminations can be avoided.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/editing.png)
+
+Individual configurations can be made using the “Edit details” option. This can be used to change the display for the payer, e.g. to “Bitcoin” in our example.
+
+The order of the payment methods displayed, the descriptive text and the associated logo can also be customized. It is recommended to activate the function “Allow change of payment method after completion of the order”.
+
+If someone chooses Bitcoin as a payment method but later decides against it, they can easily switch to another option.
+
+### Shopware sales channel settings ###
+
+Within the sales channel, the configuration options for payment and shipping can be found under General basic settings, followed by Payment methods.
+
+Here you can select Bitcoin and Lightning as your payment method. As soon as this is done, these payment methods are activated and can be used in the store.
+
+![](https://github.com/Coinsnap/coinsnap-for-Shopware/blob/master/assets/shopware-payment-and-shipping.png)
