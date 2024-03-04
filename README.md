@@ -1,8 +1,6 @@
+# Coinsnap for Shopware Payment Plugin #
 ![Image of shopwarebtcpay](https://coinsnap.io/wp-content/uploads/2023/11/Coinsnap-for-Shopware.png)
-
-# Coinsnap for Shopware Payment Plugin
-
-**Accept Bitcoin and Lightning payment in Shopware with Coinsnap**
+## Accept Bitcoin and Lightning payment in Shopware with Coinsnap ##
 
 Coinsnap is a Lightning Payment Provider and offers Bitcoin and Lightning payment processing for retail stores and online stores.
 As a merchant, you only need a Lightning wallet with a Lightning address to receive Bitcoin and Lightning payments from your customers.
