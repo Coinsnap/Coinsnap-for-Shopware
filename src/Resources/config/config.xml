@@ -103,5 +103,4 @@
             <label>Webhook secret</label>
         </input-field>
     </card>
-
 </config>

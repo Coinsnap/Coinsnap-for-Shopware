@@ -31,6 +31,7 @@ use Shopware\Core\Content\Media\MediaEntity;
 use Shopware\Core\Content\Media\File\FileSaver;
 use Coinsnap\Shopware\PaymentMethod\PaymentMethods;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
+use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
 
 class CoinsnapShopware extends Plugin
 {
@@ -146,7 +147,7 @@ class CoinsnapShopware extends Plugin
       );
     }
     foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-      $this->addPaymentMethod(new $paymentMethod(), $context->getContext());
+      $this->addPaymentMethod(new CoinsnapBitcoinLightningPaymentMethod(), $context->getContext());
     }
     //$this->addPaymentMethod($context->getContext());
   }
@@ -194,7 +195,12 @@ class CoinsnapShopware extends Plugin
   }
   public function update(UpdateContext $updateContext): void
   {
-    $currentVersion = $updateContext->getUpdatePluginVersion();
+    $updateVersion = $updateContext->getUpdatePluginVersion();
+    $currentVersion = $updateContext->getCurrentPluginVersion();
+    if ($currentVersion == "1.0.0" && $updateVersion == "1.0.1") {
+
+    }
+    
     $customFieldSetRepository = $this->container->get('custom_field_set.repository');
 
     $criteria = new Criteria();
