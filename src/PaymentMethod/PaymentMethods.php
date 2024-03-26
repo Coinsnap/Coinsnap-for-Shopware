@@ -24,13 +24,13 @@ use Coinsnap\Shopware\PaymentMethod\LitecoinPaymentMethod;
 class PaymentMethods
 {
     public const PAYMENT_METHODS = [
-        // CoinsnapBitcoinPaymentMethod::class,
-        // CoinsnapLightningPaymentMethod::class,
-        CoinsnapBitcoinLightningPaymentMethod::class,
-        // BitcoinPaymentMethod::class,
-        // LightningPaymentMethod::class,
-        // BitcoinLightningPaymentMethod::class,
-        // MoneroPaymentMethod::class,
-        // LitecoinPaymentMethod::class,
+        CoinsnapBitcoinPaymentMethod::class,
+        CoinsnapLightningPaymentMethod::class,
+        // CoinsnapBitcoinLightningPaymentMethod::class,
+        BitcoinPaymentMethod::class,
+        LightningPaymentMethod::class,
+        BitcoinLightningPaymentMethod::class,
+        MoneroPaymentMethod::class,
+        LitecoinPaymentMethod::class,
     ];
 }
