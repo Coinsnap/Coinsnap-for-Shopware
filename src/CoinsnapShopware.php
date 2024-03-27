@@ -32,6 +32,7 @@ use Shopware\Core\Content\Media\File\FileSaver;
 use Coinsnap\Shopware\PaymentMethod\PaymentMethods;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class CoinsnapShopware extends Plugin
 {
@@ -133,27 +134,43 @@ class CoinsnapShopware extends Plugin
             }
             // $customFieldSetRepository = $this->container->get('custom_field_set.repository');
 
-            $systemConfigRepository = $this->container->get('system_config.repository');
-            $criteria = (new Criteria())
-                ->addFilter(
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayServerUrl'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayApiKey'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayServerStoreId'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayWebhookId'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayWebhookSecret'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.integrationStatus'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodBTC'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodLightning'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodMonero'),
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.configbtcpayStorePaymentMethodLitecoin')
-                );
-            $idSearchResult = $systemConfigRepository->searchIds($criteria, Context::createDefaultContext());
-
-            //Formatting IDs array and deleting config keys
-            $ids = \array_map(static function ($id) {
-                return ['id' => $id];
-            }, $idSearchResult->getIds());
-            $systemConfigRepository->delete($ids, Context::createDefaultContext());
+            $configService = $this->container->get(SystemConfigService::class);
+            // $systemConfigRepository = $this->container->get('system_config.repository');
+            // $criteria = (new Criteria())
+            //     ->addFilter(
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayServerUrl'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayApiKey'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayServerStoreId'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayWebhookId'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayWebhookSecret'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.integrationStatus'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodBTC'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodLightning'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodMonero'),
+            //         new ContainsFilter('configurationKey', 'CoinsnapShopware.configbtcpayStorePaymentMethodLitecoin')
+            //     );
+            // $idSearchResult = $systemConfigRepository->searchIds($criteria, Context::createDefaultContext());
+            //
+            // //Formatting IDs array and deleting config keys
+            // $ids = \array_map(static function ($id) {
+            //     return ['id' => $id];
+            // }, $idSearchResult->getIds());
+            // $systemConfigRepository->delete($ids, Context::createDefaultContext());
+            $configKeysToDelete = [
+                'CoinsnapShopware.config.btcpayServerUrl',
+                'CoinsnapShopware.config.btcpayApiKey',
+                'CoinsnapShopware.config.btcpayServerStoreId',
+                'CoinsnapShopware.config.btcpayWebhookId',
+                'CoinsnapShopware.config.btcpayWebhookSecret',
+                'CoinsnapShopware.config.integrationStatus',
+                'CoinsnapShopware.config.btcpayStorePaymentMethodBTC',
+                'CoinsnapShopware.config.btcpayStorePaymentMethodLightning',
+                'CoinsnapShopware.config.btcpayStorePaymentMethodMonero',
+                'CoinsnapShopware.configbtcpayStorePaymentMethodLitecoin',
+            ];
+            foreach ($configKeysToDelete as $configKey) {
+                $configService->delete($configKey);
+            }
         }
 
         parent::update($updateContext);
