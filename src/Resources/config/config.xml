@@ -3,12 +3,12 @@
     <card>
         <input-field type="textarea">
             <name>Alert</name>
-            <placeholder>**Attention:** Support for BTCPay will be removed in the next release.
-            To continue using BTCPay functionality, please install the <a href="https://github.com/coincharge-io/CoinchargeBTCPayShopware">CoinchargeBTCPayShopware</a> plugin.</placeholder>
-        <placeholder lang="de-DE"> **Achtung:** Die Unterstützung für BTCPay wird in der nächsten Version entfernt werden.
-    Um die BTCPay-Funktionalität weiterhin zu nutzen, installieren Sie bitte das <a href="https://github.com/coincharge-io/CoinchargeBTCPayShopware">CoinchargeBTCPayShopware</a> Plugin.</placeholder>
+            <placeholder>Support for BTCPay will be removed in the next release. To continue using BTCPay functionality, please install the https://github.com/coincharge-io/CoinchargeBTCPayShopware</placeholder>
+            <placeholder lang="de-DE">Die Unterstützung für BTCPay wird in der nächsten Version entfernt werden. Um die BTCPay-Funktionalität weiterhin zu nutzen, installieren Sie bitte das https://github.com/coincharge-io/CoinchargeBTCPayShopware</placeholder>
             <disabled>true</disabled>
         </input-field>
+    </card>
+    <card>
         <title>Coinsnap</title>
         <input-field>
             <name>coinsnapStoreId</name>
