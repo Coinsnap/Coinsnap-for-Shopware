@@ -33,6 +33,7 @@
     </card>
     <card>
         <title>BTCPay Server</title>
+        <component name="btcpay-deprecation"/>
         <input-field type="checkbox">
             <name>integrationStatus</name>
             <label>Connected to the BTCPay Server</label>

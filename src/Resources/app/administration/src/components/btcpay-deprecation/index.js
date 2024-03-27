@@ -2,8 +2,8 @@
 const { Component, Mixin } = Shopware;
 
 // Register the component
-Component.register('swag-payment-deprecation', {
-  template: './swag-payment-deprecation.html', // Path to the separate template file
+Component.register('btcpay-deprecation', {
+  template: './btcpay-deprecation.html.twig', // Path to the separate template file
   mixins: [Mixin.getByName('notification')],
   data() {
     return {
