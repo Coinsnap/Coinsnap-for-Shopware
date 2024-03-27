@@ -135,7 +135,6 @@ class CoinsnapShopware extends Plugin
     }
     public function update(UpdateContext $updateContext): void
     {
-        // $updateVersion = $updateContext->getUpdatePluginVersion();
         $currentVersion = $updateContext->getCurrentPluginVersion();
         if ($currentVersion == "1.0.1") {
             foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
