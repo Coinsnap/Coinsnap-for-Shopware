@@ -167,9 +167,9 @@ class CoinsnapShopware extends Plugin
         $criteria->addFilter(new EqualsAnyFilter('name', ['coinsnap']));
 
         $customFieldIds = $customFieldSetRepository->search($criteria, $updateContext->getContext())->first();
-        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-            $this->addPaymentMethod(new $paymentMethod(), $updateContext->getContext());
-        }
+        // foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+        //     $this->addPaymentMethod(new $paymentMethod(), $updateContext->getContext());
+        // }
         parent::update($updateContext);
     }
 
