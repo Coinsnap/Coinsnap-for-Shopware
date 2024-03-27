@@ -8,7 +8,6 @@
 
 import "./components/btcpay-connection-button";
 import "./components/coinsnap-connection-button";
-import "./components/btcpay-deprecation";
 import "./main.scss";
 import CoinsnapBtcpayApiService from "./service/CoinsnapBTCPayAPI.service";
 import CoinsnapApiService from "./service/CoinsnapAPI.service";
