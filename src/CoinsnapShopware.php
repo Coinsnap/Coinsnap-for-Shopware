@@ -96,25 +96,27 @@ class CoinsnapShopware extends Plugin
             $this->setPaymentMethodIsActive(new $paymentMethod(), false, $context->getContext());
         }
         if (!$context->keepUserData()) {
-            $customFieldSetRepository = $this->container->get('custom_field_set.repository');
 
             $systemConfigRepository = $this->container->get('system_config.repository');
             $criteria = (new Criteria())
                 ->addFilter(
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config')
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayServerUrl'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayApiKey'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayServerStoreId'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayWebhookId'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayWebhookSecret'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.integrationStatus'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodBTC'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodLightning'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config.btcpayStorePaymentMethodMonero'),
+                    new ContainsFilter('configurationKey', 'CoinsnapShopware.configbtcpayStorePaymentMethodLitecoin')
                 );
             $idSearchResult = $systemConfigRepository->searchIds($criteria, Context::createDefaultContext());
 
-            //Formatting IDs array and deleting config keys
             $ids = \array_map(static function ($id) {
                 return ['id' => $id];
             }, $idSearchResult->getIds());
             $systemConfigRepository->delete($ids, Context::createDefaultContext());
-            // $customFieldCriteria = new Criteria();
-            // $customFieldCriteria->addFilter(new EqualsAnyFilter('name', ['btcpayServer', 'coinsnap']));
-            //
-            // $customFieldIds = $customFieldSetRepository->searchIds($customFieldCriteria, $context->getContext());
-            // $customFieldSetRepository->delete(array_values($customFieldIds->getData()), $context->getContext());
         }
     }
 
