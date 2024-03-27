@@ -110,11 +110,11 @@ class CoinsnapShopware extends Plugin
                 return ['id' => $id];
             }, $idSearchResult->getIds());
             $systemConfigRepository->delete($ids, Context::createDefaultContext());
-            $customFieldCriteria = new Criteria();
-            $customFieldCriteria->addFilter(new EqualsAnyFilter('name', ['btcpayServer', 'coinsnap']));
-
-            $customFieldIds = $customFieldSetRepository->searchIds($customFieldCriteria, $context->getContext());
-            $customFieldSetRepository->delete(array_values($customFieldIds->getData()), $context->getContext());
+            // $customFieldCriteria = new Criteria();
+            // $customFieldCriteria->addFilter(new EqualsAnyFilter('name', ['btcpayServer', 'coinsnap']));
+            //
+            // $customFieldIds = $customFieldSetRepository->searchIds($customFieldCriteria, $context->getContext());
+            // $customFieldSetRepository->delete(array_values($customFieldIds->getData()), $context->getContext());
         }
     }
 
