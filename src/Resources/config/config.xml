@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
+        <input-field type="textarea">
+            <name>Alert</name>
+            <placeholder>**Attention:** Support for BTCPay will be removed in the next release.
+            To continue using BTCPay functionality, please install the <a href="https://github.com/coincharge-io/CoinchargeBTCPayShopware">CoinchargeBTCPayShopware</a> plugin.</placeholder>
+        <placeholder lang="de-DE"> **Achtung:** Die Unterstützung für BTCPay wird in der nächsten Version entfernt werden.
+    Um die BTCPay-Funktionalität weiterhin zu nutzen, installieren Sie bitte das <a href="https://github.com/coincharge-io/CoinchargeBTCPayShopware">CoinchargeBTCPayShopware</a> Plugin.</placeholder>
+            <disabled>true</disabled>
+        </input-field>
         <title>Coinsnap</title>
         <input-field>
             <name>coinsnapStoreId</name>
@@ -35,7 +43,7 @@
         <title>BTCPay Server</title>
         <component name="btcpay-deprecation">
             <name>deprecation</name>
-            </component>
+        </component>
         <input-field type="checkbox">
             <name>integrationStatus</name>
             <label>Connected to the BTCPay Server</label>
