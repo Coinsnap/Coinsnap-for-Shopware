@@ -82,6 +82,7 @@
         <service id="Coinsnap\Shopware\Order\OrderService">
             <argument type="service" id="Coinsnap\Shopware\Client\BTCPayServerClient"/>
             <argument type="service" id="Coinsnap\Shopware\Configuration\ConfigurationService"/>
+            <argument type="service" id="order.repository"/>
         </service>
         <service id="Coinsnap\Shopware\Webhook\BTCPayWebhookService">
             <argument type="service" id="Coinsnap\Shopware\Client\BTCPayServerClient"/>

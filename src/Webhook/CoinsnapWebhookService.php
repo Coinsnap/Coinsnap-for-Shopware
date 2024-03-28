@@ -43,6 +43,13 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         $this->logger = $logger;
     }
 
+    /**
+     * Registers a webhook for the API.
+     *
+     * @param Request $request The HTTP request.
+     * @param string|null $salesChannelId The ID of the sales channel (optional).
+     * @return bool Returns true if the webhook was successfully registered, false otherwise.
+     */
     public function register(Request $request, ?string $salesChannelId): bool
     {
         try {
@@ -61,8 +68,7 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                 ]
             );
             if (empty($body)) {
-                $this->logger->error("Webhook couldn't be created");
-                return false;
+                throw new \Exception("Webhook couldn't be created");
             }
 
             $this->configurationService->setSetting('coinsnapWebhookSecret', $body['secret']);
@@ -70,6 +76,7 @@ class CoinsnapWebhookService implements WebhookServiceInterface
 
             return true;
         } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
             return false;
         }
     }
@@ -82,16 +89,13 @@ class CoinsnapWebhookService implements WebhookServiceInterface
             }
             $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/webhooks/' . $this->configurationService->getSetting('coinsnapWebhookId');
             $response = $this->client->sendGetRequest($uri);
-            if (empty($response)) {
-                $this->logger->error("Webhook with ID:" . $this->configurationService->getSetting('coinsnapWebhookId') . " doesn't exist.");
-                return false;
-            }
-            if ($response['enabled'] == false) {
-                $this->logger->error("Webhook with ID:" . $this->configurationService->getSetting('coinsnapWebhookId') . " isn't enabled.");
-                return false;
+            if (empty($response) || $response['enabled'] === false) {
+                throw new \Exception("Webhook with ID:" . $this->configurationService->getSetting('coinsnapWebhookId') .
+                    (empty($response) ? " doesn't exist." : " isn't enabled."));
             }
             return true;
         } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
             return false;
         }
     }
@@ -109,9 +113,12 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         }
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
         $responseBody = $this->client->sendGetRequest($uri);
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('orderNumber', $responseBody['metadata']['orderNumber']));
-        $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
+        // $criteria = new Criteria();
+        // $criteria->addFilter(new EqualsFilter('orderNumber', $responseBody['metadata']['orderNumber']));
+        // $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
+
+
+        $orderId = $this->orderService->getId($responseBody['metadata']['orderNumber'], $context);
 
 
         switch ($body['type']) {
@@ -169,6 +176,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                 $this->logger->info('Invoice payment settled.');
                 break;
         }
-        return new Response();
+        return new Response('success', Response::HTTP_OK);
     }
 }

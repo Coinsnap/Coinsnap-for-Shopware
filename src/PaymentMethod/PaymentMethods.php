@@ -26,7 +26,7 @@ class PaymentMethods
     public const PAYMENT_METHODS = [
         CoinsnapBitcoinPaymentMethod::class,
         CoinsnapLightningPaymentMethod::class,
-        CoinsnapBitcoinLightningPaymentMethod::class,
+        // CoinsnapBitcoinLightningPaymentMethod::class,
         BitcoinPaymentMethod::class,
         LightningPaymentMethod::class,
         BitcoinLightningPaymentMethod::class,

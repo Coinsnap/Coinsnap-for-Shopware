@@ -14,16 +14,24 @@ namespace Coinsnap\Shopware\Order;
 
 use Coinsnap\Shopware\Client\ClientInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
+/**
+ * Class OrderService
+ * @package Coinsnap\Shopware
+ */
 class OrderService
 {
     private ClientInterface $client;
     private ConfigurationService $configurationService;
+    private EntityRepository $orderRepository;
 
-    public function __construct(ClientInterface $client, ConfigurationService $configurationService)
+    public function __construct(ClientInterface $client, ConfigurationService $configurationService, EntityRepository $orderRepository)
     {
         $this->client = $client;
         $this->configurationService = $configurationService;
+        $this->orderRepository = $orderRepository;
     }
 
     public function invoiceIsFullyPaid(string $invoiceId): bool
@@ -31,9 +39,13 @@ class OrderService
 
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('btcpayServerStoreId') . '/invoices/' . $invoiceId;
         $response = $this->client->sendGetRequest($uri);
-        if ($response['status'] !== 'Settled') {
-            return false;
-        }
-        return true;
+        return ($response['status'] === 'Settled');
+    }
+    private function getId(string $orderNumber, Context $context): string
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
+        $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
+        return $orderId;
     }
 }

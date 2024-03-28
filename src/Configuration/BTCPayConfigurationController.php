@@ -93,7 +93,6 @@ class BTCPayConfigurationController extends ConfigurationController
                 $this->updatePaymentMethodStatus($context, $paymentHandlers[$key], $val['enabled'], $this->paymentRepository);
             }
         }
-        $this->enableIntegratedPaymentPage($context);
     }
     private function disableBTCPaymentMethodsBeforeTest()
     {
@@ -101,10 +100,5 @@ class BTCPayConfigurationController extends ConfigurationController
         $this->configurationService->setSetting('btcpayStorePaymentMethodLightning', false);
         $this->configurationService->setSetting('btcpayStorePaymentMethodLitecoin', false);
         $this->configurationService->setSetting('btcpayStorePaymentMethodMonero', false);
-    }
-    private function enableIntegratedPaymentPage(Context $context)
-    {
-        if ($this->configurationService->getSetting('btcpayStorePaymentMethodBTC') == true || $this->configurationService->getSetting('btcpayStorePaymentMethodLightning') == true) {
-        }
     }
 }
