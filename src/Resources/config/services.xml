@@ -25,12 +25,6 @@
             <factory service="Coinsnap\Shopware\Util\Log\LoggerFactory" method="createRotating"/>
             <argument type="string">coinsnap_shopware</argument>
         </service>
-
-        <service id="Coinsnap\Shopware\Order\OrderService">
-            <argument type="service" id="Coinsnap\Shopware\Client\CoinsnapClient"/>
-            <argument type="service" id="Coinsnap\Shopware\Configuration\ConfigurationService"/>
-            <argument type="service" id="order.repository"/>
-        </service>
         <service id="Coinsnap\Shopware\Webhook\Factory\WebhookFactory" public="true">
             <argument type="service" id="Coinsnap\Shopware\Client\CoinsnapClient"/>
             <argument type="service" id="Coinsnap\Shopware\Configuration\ConfigurationService"/>
