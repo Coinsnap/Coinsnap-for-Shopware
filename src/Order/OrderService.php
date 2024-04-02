@@ -16,6 +16,7 @@ use Coinsnap\Shopware\Client\ClientInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 /**
  * Class OrderService
