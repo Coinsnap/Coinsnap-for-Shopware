@@ -29,11 +29,11 @@ class CoinsnapClient extends AbstractClient implements ClientInterface
 
         $client = new Client(
             [
-            'base_uri' => 'https://app.coinsnap.io',
-            'headers' => [
-              'X-Api-Key' => $authorizationHeader
+                'base_uri' => 'https://app.coinsnap.io',
+                'headers' => [
+                    'X-Api-Key' => $authorizationHeader
+                ]
             ]
-      ]
         );
         parent::__construct($client, $logger);
     }
@@ -41,15 +41,15 @@ class CoinsnapClient extends AbstractClient implements ClientInterface
     {
         $headers['content-type'] = 'application/json';
         $options = [
-          'headers' => $headers,
-          'json'  => $data
+            'headers' => $headers,
+            'json'  => $data
         ];
         return $this->post($resourceUri, $options);
     }
     public function sendGetRequest(string $resourceUri, array $headers = []): array
     {
         $options = [
-          'headers' => $headers
+            'headers' => $headers
         ];
         return $this->get($resourceUri, $options);
     }
