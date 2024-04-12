@@ -38,8 +38,6 @@ class WebhookRouter
     {
         if ($request->headers->has('X-Coinsnap-Sig')) {
             return 'coinsnap';
-        } elseif ($request->headers->has('btcpay-sig')) {
-            return 'btcpay_server';
         }
     }
 }

@@ -51,8 +51,6 @@ class CoinsnapConfigurationController extends ConfigurationController
                 $this->configurationService->setSetting('coinsnapIntegrationStatus', false);
                 return new JsonResponse(['success' => false, 'message' => "There is a temporary problem with Coinsnap Server. A webhook can't be created at the moment. Please try later."]);
             }
-            $this->updatePaymentMethodStatus($context, CoinsnapLightningPaymentMethod::class, true, $this->paymentRepository);
-            $this->updatePaymentMethodStatus($context, CoinsnapBitcoinPaymentMethod::class, true, $this->paymentRepository);
             $this->updatePaymentMethodStatus($context, CoinsnapBitcoinLightningPaymentMethod::class, true, $this->paymentRepository);
             $this->configurationService->setSetting('coinsnapIntegrationStatus', true);
             return new JsonResponse(['success' => true]);
