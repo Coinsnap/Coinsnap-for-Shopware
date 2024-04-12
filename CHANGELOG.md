@@ -2,6 +2,7 @@
 
 - Replace deprecated methods for registering routes
 - Fix problem with handling payment exceptions
+- Drop BTCPay support
 
 # 1.0.2
 
