@@ -22,7 +22,7 @@
             <argument>%shopware.logger.file_rotation_count%</argument>
         </service>
         <service id="Coinsnap\Shopware\Util\Logger" class="Monolog\Logger">
-            <factory service="Coinsnap\Shopware\Util\Log\LoggerFactory" method="createLoger"/>
+            <factory service="Coinsnap\Shopware\Util\Log\LoggerFactory" method="createLogger"/>
         </service>
         <service id="Coinsnap\Shopware\Webhook\Factory\WebhookFactory" public="true">
             <argument type="service" id="Coinsnap\Shopware\Client\CoinsnapClient"/>

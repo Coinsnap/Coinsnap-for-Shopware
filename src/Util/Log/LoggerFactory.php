@@ -20,7 +20,7 @@ class LoggerFactory
     public function createLogger(): Logger
     {
         $logger = new Logger('coinsnap_shopware');
-        $logger->pushHandler(new LogHandler()); // Potential issue here
+        // $logger->pushHandler(new LogHandler()); // Potential issue here
         $logger->pushProcessor(new PsrLogMessageProcessor());
 
         return $logger;
