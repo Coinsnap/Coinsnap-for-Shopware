@@ -37,7 +37,7 @@ class CoinsnapConfigurationController extends ConfigurationController
         $this->paymentRepository = $paymentRepository;
     }
 
-    #[Route(path: '/api/_action/coincharge/coinsnap_verify', name: 'api.action.coincharge.coinsnap_verify', methods: ['GET'])]
+    #[Route(path: '/api/_action/coinsnap/coinsnap_verify', name: 'api.action.coinsnap.coinsnap_verify', methods: ['GET'])]
     public function verifyApiKey(Request $request, Context $context)
     {
         try {
