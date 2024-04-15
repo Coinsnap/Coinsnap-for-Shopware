@@ -1,4 +1,0 @@
-<sw-container columns="repeat(2, auto)" gap="0px 10px">
-	<sw-button v-tooltip.top="{ message:$tc('coinsnap-btcpay-generate-credentials.info')}" class="sw-button-coinsnap" @click="generateAPIKey">{{ $tc('coinsnap-btcpay-generate-credentials.button') }}</sw-button>
-	<sw-button-process class="sw-button-coinsnap" :process-success="isLoading" :is-loading="isLoading" @click="testConnection">{{ $tc('coinsnap-btcpay-test-connection.button') }}</sw-button-process>
-</sw-container>

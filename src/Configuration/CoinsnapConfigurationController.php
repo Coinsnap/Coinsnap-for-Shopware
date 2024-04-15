@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2023 Coinsnap
+ * Copyright (c) 2024 Coinsnap
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  *
@@ -21,10 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Shopware\Core\Framework\Context;
 use Coinsnap\Shopware\PaymentMethod\{CoinsnapLightningPaymentMethod, CoinsnapBitcoinPaymentMethod, CoinsnapBitcoinLightningPaymentMethod};
 
-/**
- * @Route(defaults={"_routeScope"={"api"}})
- */
-
+#[Route(defaults: ['_routeScope' => ['api']])]
 class CoinsnapConfigurationController extends ConfigurationController
 {
     private ClientInterface $client;
@@ -40,9 +37,7 @@ class CoinsnapConfigurationController extends ConfigurationController
         $this->paymentRepository = $paymentRepository;
     }
 
-    /**
-     * @Route("/api/_action/coinsnap/coinsnap_verify", name="api.action.coinsnap.coinsnap_verify", methods={"GET"})
-     */
+    #[Route(path: '/api/_action/coincharge/coinsnap_verify', name: 'api.action.coincharge.coinsnap_verify', methods: ['GET'])]
     public function verifyApiKey(Request $request, Context $context)
     {
         try {
@@ -56,8 +51,6 @@ class CoinsnapConfigurationController extends ConfigurationController
                 $this->configurationService->setSetting('coinsnapIntegrationStatus', false);
                 return new JsonResponse(['success' => false, 'message' => "There is a temporary problem with Coinsnap Server. A webhook can't be created at the moment. Please try later."]);
             }
-            $this->updatePaymentMethodStatus($context, CoinsnapLightningPaymentMethod::class, true, $this->paymentRepository);
-            $this->updatePaymentMethodStatus($context, CoinsnapBitcoinPaymentMethod::class, true, $this->paymentRepository);
             $this->updatePaymentMethodStatus($context, CoinsnapBitcoinLightningPaymentMethod::class, true, $this->paymentRepository);
             $this->configurationService->setSetting('coinsnapIntegrationStatus', true);
             return new JsonResponse(['success' => true]);

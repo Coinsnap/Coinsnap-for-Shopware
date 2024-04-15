@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2023 Coinsnap
+ * Copyright (c) 2024 Coinsnap
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  *
@@ -113,9 +113,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         }
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
         $responseBody = $this->client->sendGetRequest($uri);
-        // $criteria = new Criteria();
-        // $criteria->addFilter(new EqualsFilter('orderNumber', $responseBody['metadata']['orderNumber']));
-        // $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
 
 
         $orderId = $this->orderService->getId($responseBody['metadata']['orderNumber'], $context);

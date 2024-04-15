@@ -1,10 +1,16 @@
+# 1.0.3
+
+- Replace deprecated methods for registering routes
+- Fix problem with handling payment exceptions
+- Drop BTCPay support
+
 # 1.0.2
 
-- Fix problem with connection
+- Fix problem with gateway connection
 
 # 1.0.1
 
-- Add notice about dropping BTCPay support
+- Announcement of Dropping Support for BTCPay Server
 
 # 1.0.0
 

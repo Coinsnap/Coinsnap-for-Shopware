@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2023 Coinsnap
+ * Copyright (c) 2024 Coinsnap
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  *

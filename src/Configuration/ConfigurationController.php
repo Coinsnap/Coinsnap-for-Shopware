@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2023 Coinsnap
+ * Copyright (c) 2024 Coinsnap
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  *
@@ -20,10 +20,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Coinsnap\Shopware\PaymentMethod\{LightningPaymentMethod, BitcoinPaymentMethod};
 
-/**
- * @Route(defaults={"_routeScope"={"api"}})
- */
-
+#[Route(defaults: ['_routeScope' => ['api']])]
 class ConfigurationController extends AbstractController
 {
     public function verifyApiKey(Request $request, Context $context)
