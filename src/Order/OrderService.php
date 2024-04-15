@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\Order;
 
-use Coinsnap\Shopware\Client\ClientInterface;
-use Coinsnap\Shopware\Configuration\ConfigurationService;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 /**
  * Class OrderService
@@ -23,14 +22,10 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
  */
 class OrderService
 {
-  private ClientInterface $client;
-  private ConfigurationService $configurationService;
   private EntityRepository $orderRepository;
 
-  public function __construct(ClientInterface $client, ConfigurationService $configurationService, EntityRepository $orderRepository)
+  public function __construct(EntityRepository $orderRepository)
   {
-    $this->client = $client;
-    $this->configurationService = $configurationService;
     $this->orderRepository = $orderRepository;
   }
 
