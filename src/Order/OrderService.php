@@ -29,7 +29,7 @@ class OrderService
     $this->orderRepository = $orderRepository;
   }
 
-  private function getId(string $orderNumber, Context $context): string
+  public function getId(string $orderNumber, Context $context): string
   {
     $criteria = new Criteria();
     $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
