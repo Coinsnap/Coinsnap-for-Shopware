@@ -36,8 +36,6 @@ class WebhookRouter
     }
     public function getProviderFromRequest(Request $request): string
     {
-        if ($request->headers->has('X-Coinsnap-Sig')) {
-            return 'coinsnap';
-        }
+        return 'coinsnap';
     }
 }
