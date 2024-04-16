@@ -15,6 +15,7 @@ namespace Coinsnap\Shopware\Order;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\Context;
 
 /**
  * Class OrderService
@@ -22,18 +23,18 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
  */
 class OrderService
 {
-  private EntityRepository $orderRepository;
+    private EntityRepository $orderRepository;
 
-  public function __construct(EntityRepository $orderRepository)
-  {
-    $this->orderRepository = $orderRepository;
-  }
+    public function __construct(EntityRepository $orderRepository)
+    {
+        $this->orderRepository = $orderRepository;
+    }
 
-  public function getId(string $orderNumber, Context $context): string
-  {
-    $criteria = new Criteria();
-    $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
-    $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
-    return $orderId;
-  }
+    public function getId(string $orderNumber, Context $context): string
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
+        $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
+        return $orderId;
+    }
 }
