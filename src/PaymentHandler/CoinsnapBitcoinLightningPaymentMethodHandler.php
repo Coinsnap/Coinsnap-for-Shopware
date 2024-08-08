@@ -52,9 +52,10 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
                     'metadata' =>
                     [
                         'orderNumber' => $transaction->getOrder()->getOrderNumber(),
+                        'orderId' => $transaction->getOrderTransaction()->getOrderId(),
                         'transactionId' => $transaction->getOrderTransaction()->getId()
                     ],
-                    'orderId' => $transaction->getOrderTransaction()->getOrderId(),
+                    'orderId' => $transaction->getOrder()->getOrderNumber(),
                     'redirectUrl' => $accountUrl,
                 ]
             );
