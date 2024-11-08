@@ -13,15 +13,21 @@ declare(strict_types=1);
 namespace Coinsnap\Shopware\Util\Log;
 
 use Monolog\Logger;
-use Monolog\Processor\PsrLogMessageProcessor;
+use Monolog\Handler\RotatingFileHandler;
 
-class LoggerFactory
-{
-    public function createLogger(): Logger
-    {
-        $logger = new Logger('coinsnap_shopware');
-        // $logger->pushHandler(new LogHandler()); // Potential issue here
-        $logger->pushProcessor(new PsrLogMessageProcessor());
+class LoggerFactory {
+    private $logPath;
+    private $rotationCount;
+
+    public function __construct(string $logPath, int $rotationCount) {
+        $this->logPath = $logPath;
+        $this->rotationCount = $rotationCount;
+    }
+
+    public function createLogger(): Logger {
+        $logger = new Logger('coinsnap_logger');
+        $handler = new RotatingFileHandler($this->logPath, $this->rotationCount);
+        $logger->pushHandler($handler);
 
         return $logger;
     }
