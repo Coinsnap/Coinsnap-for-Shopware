@@ -104,7 +104,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
     public function process(Request $request, Context $context): Response
     {
         $signature = $request->headers->get(self::REQUIRED_HEADER);
-        $this->logger->info('requstest headers', [$request->headers]);
 
         if (empty($signature)) {
             $this->logger->error('Missing signature header');
@@ -115,8 +114,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
             );
         }
         $body = $request->request->all();
-        $this->logger->info('body', [$body]);
-        $this->logger->info('json body', [json_encode($body)]);
 
         if (empty($body)) {
             $this->logger->error('Missing webhook data');
@@ -126,18 +123,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
               ['Content-Type' => 'application/json']
             );
         }
-
-
-//        $getWebhookData = $request->getContent();
-//        $this->logger->info('WebhookData', [$getWebhookData]);
-//        if (empty($getWebhookData)) {
-//            $this->logger->error('Missing webhook data');
-//            return new Response(
-//              json_encode(['error' => 'Missing webhook data']),
-//              Response::HTTP_UNAUTHORIZED,
-//              ['Content-Type' => 'application/json']
-//            );
-//        }
 
         if (empty($this->configurationService->getSetting('coinsnapWebhookSecret'))) {
             $this->logger->error('Missing webhook secret');
@@ -149,8 +134,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         }
 
         $expectedHeader = 'sha256=' . hash_hmac('sha256', json_encode($body), $this->configurationService->getSetting('coinsnapWebhookSecret'));
-        $this->logger->info('expec', [$expectedHeader]);
-        $this->logger->info('singature', [$signature]);
 
         if ($signature !== $expectedHeader) {
             $this->logger->error('Invalid signature');
@@ -164,7 +147,6 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         $responseBody = $this->client->sendGetRequest($uri);
 
         $orderId = $this->orderService->getId($responseBody['metadata']['orderNumber'], $context);
-
 
         switch ($body['type']) {
             case 'Processing': // The invoice is paid in full.
