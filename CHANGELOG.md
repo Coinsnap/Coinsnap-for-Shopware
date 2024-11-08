@@ -1,3 +1,7 @@
+# 1.0.4
+- Updated logger
+- Added necessary checks for Webhook endpoint
+
 # 1.0.3
 
 - Replace deprecated methods for registering routes

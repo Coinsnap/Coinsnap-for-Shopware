@@ -58,14 +58,14 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                 return true;
             }
 
-            $webhookUrl =  $request->server->get('APP_URL') . '/api/_action/coinsnap/webhook-endpoint';
+            $webhookUrl = $request->server->get('APP_URL') . '/api/_action/coinsnap/webhook-endpoint';
 
             $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/webhooks';
             $body = $this->client->sendPostRequest(
-                $uri,
-                [
-                    'url' => $webhookUrl
-                ]
+              $uri,
+              [
+                'url' => $webhookUrl
+              ]
             );
             if (empty($body)) {
                 throw new \Exception("Webhook couldn't be created");
@@ -80,6 +80,7 @@ class CoinsnapWebhookService implements WebhookServiceInterface
             return false;
         }
     }
+
     public function isEnabled(): bool
     {
         try {
@@ -91,7 +92,7 @@ class CoinsnapWebhookService implements WebhookServiceInterface
             $response = $this->client->sendGetRequest($uri);
             if (empty($response) || $response['enabled'] === false) {
                 throw new \Exception("Webhook with ID:" . $this->configurationService->getSetting('coinsnapWebhookId') .
-                    (empty($response) ? " doesn't exist." : " isn't enabled."));
+                  (empty($response) ? " doesn't exist." : " isn't enabled."));
             }
             return true;
         } catch (\Exception $e) {
@@ -103,35 +104,64 @@ class CoinsnapWebhookService implements WebhookServiceInterface
     public function process(Request $request, Context $context): Response
     {
         $signature = $request->headers->get(self::REQUIRED_HEADER);
+
+        if (empty($signature)) {
+            $this->logger->error('Missing signature header');
+            return new Response(
+              json_encode(['error' => 'Missing signature header']),
+              Response::HTTP_UNAUTHORIZED,
+              ['Content-Type' => 'application/json']
+            );
+        }
         $body = $request->request->all();
 
-        $expectedHeader = 'sha256=' . hash_hmac('sha256', $request->getContent(), $this->configurationService->getSetting('coinsnapWebhookSecret'));
+        if (empty($body)) {
+            $this->logger->error('Missing webhook data');
+            return new Response(
+              json_encode(['error' => 'Missing webhook data']),
+              Response::HTTP_UNAUTHORIZED,
+              ['Content-Type' => 'application/json']
+            );
+        }
+
+        if (empty($this->configurationService->getSetting('coinsnapWebhookSecret'))) {
+            $this->logger->error('Missing webhook secret');
+            return new Response(
+              json_encode(['error' => 'Missing webhook secret']),
+              Response::HTTP_UNAUTHORIZED,
+              ['Content-Type' => 'application/json']
+            );
+        }
+
+        $expectedHeader = 'sha256=' . hash_hmac('sha256', json_encode($body), $this->configurationService->getSetting('coinsnapWebhookSecret'));
 
         if ($signature !== $expectedHeader) {
             $this->logger->error('Invalid signature');
-            return new Response();
+            return new Response(
+              json_encode(['error' => 'Invalid signature']),
+              Response::HTTP_UNAUTHORIZED,
+              ['Content-Type' => 'application/json']
+            );
         }
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
         $responseBody = $this->client->sendGetRequest($uri);
 
-
         $orderId = $this->orderService->getId($responseBody['metadata']['orderNumber'], $context);
-
 
         switch ($body['type']) {
             case 'Processing': // The invoice is paid in full.
                 $this->transactionStateHandler->process($responseBody['metadata']['transactionId'], $context);
                 $this->orderRepository->upsert(
+                  [
                     [
-                        [
-                            'id' => $orderId,
-                            'customFields' => [
-                                'coinsnapInvoiceId' => $body['invoiceId'],
-                                'coinsnapOrderStatus' => 'processing',
-                            ],
-                        ],
+                      'id' => $orderId,
+                      'customFields' => [
+                        'coinsnapInvoiceId' => $body['invoiceId'],
+                        'coinsnapOrderStatus' => 'processing',
+                      ],
                     ],
-                    $context
+                  ],
+                  $context
                 );
                 $this->logger->info('Invoice settled, waiting for payment to settle.');
                 break;
@@ -139,16 +169,16 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                 //TODO: Check if invoice was partially paid
                 $status = $body['underpaid'] ? 'partially_paid' : 'expired';
                 $this->orderRepository->upsert(
+                  [
                     [
-                        [
-                            'id' => $orderId,
-                            'customFields' => [
-                                'coinsnapInvoiceId' => $body['invoiceId'],
-                                'coinsnapOrderStatus' => $status,
-                            ],
-                        ],
+                      'id' => $orderId,
+                      'customFields' => [
+                        'coinsnapInvoiceId' => $body['invoiceId'],
+                        'coinsnapOrderStatus' => $status,
+                      ],
                     ],
-                    $context
+                  ],
+                  $context
                 );
                 //TODO: Check if paid partially
                 if ($body['underpaid']) {
@@ -158,16 +188,16 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                 break;
             case 'Settled':
                 $this->orderRepository->upsert(
+                  [
                     [
-                        [
-                            'id' => $orderId,
-                            'customFields' => [
-                                'coinsnapInvoiceId' => $body['invoiceId'],
-                                'coinsnapOrderStatus' => 'settled',
-                            ],
-                        ],
+                      'id' => $orderId,
+                      'customFields' => [
+                        'coinsnapInvoiceId' => $body['invoiceId'],
+                        'coinsnapOrderStatus' => 'settled',
+                      ],
                     ],
-                    $context
+                  ],
+                  $context
                 );
                 $this->transactionStateHandler->paid($responseBody['metadata']['transactionId'], $context);
                 $this->logger->info('Invoice payment settled.');
