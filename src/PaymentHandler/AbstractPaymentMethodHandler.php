@@ -12,57 +12,91 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\PaymentHandler;
 
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface;
-use Shopware\Core\Checkout\Payment\Exception\AsyncPaymentProcessException;
-use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Coinsnap\Shopware\Client\ClientInterface;
+use Coinsnap\Shopware\Configuration\ConfigurationService;
+use Psr\Log\LoggerInterface;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
+use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
+use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
+use Shopware\Core\Checkout\Payment\PaymentException;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Struct\Struct;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Psr\Log\LoggerInterface;
-use Coinsnap\Shopware\Configuration\ConfigurationService;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
-use Coinsnap\Shopware\Client\ClientInterface;
-use Shopware\Core\Checkout\Payment\PaymentException;
 
-abstract class AbstractPaymentMethodHandler implements AsynchronousPaymentHandlerInterface
+abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
 {
-    private ClientInterface $client;
-    private ConfigurationService  $configurationService;
-    private OrderTransactionStateHandler $transactionStateHandler;
-    private LoggerInterface $logger;
-    public string $baseSuccessUrl;
+    protected ClientInterface $client;
+    protected ConfigurationService $configurationService;
+    protected OrderTransactionStateHandler $transactionStateHandler;
+    protected EntityRepository $orderTransactionRepository;
+    protected LoggerInterface $logger;
 
-    public function __construct(ClientInterface $client, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, LoggerInterface $logger)
-    {
+    public function __construct(
+        ClientInterface $client,
+        ConfigurationService $configurationService,
+        OrderTransactionStateHandler $transactionStateHandler,
+        EntityRepository $orderTransactionRepository,
+        LoggerInterface $logger
+    ) {
         $this->client = $client;
         $this->configurationService = $configurationService;
         $this->transactionStateHandler = $transactionStateHandler;
+        $this->orderTransactionRepository = $orderTransactionRepository;
         $this->logger = $logger;
-        $appUrl = $_SERVER['APP_URL'];
-        $url =  "$appUrl/checkout/finish?orderId=";
-        $this->baseSuccessUrl = $url;
     }
 
     /**
-     * @throws AsyncPaymentProcessException
+     * This handler only supports the synchronous redirect flow. Refunds and
+     * recurring payments are handled out of band by Coinsnap, so neither
+     * capability is advertised here.
      */
-    public function pay(AsyncPaymentTransactionStruct $transaction, RequestDataBag $dataBag, SalesChannelContext $salesChannelContext): RedirectResponse
+    public function supports(PaymentHandlerType $type, string $paymentMethodId, Context $context): bool
+    {
+        return false;
+    }
+
+    public function pay(Request $request, PaymentTransactionStruct $transaction, Context $context, ?Struct $validateStruct): ?RedirectResponse
     {
         try {
-            $redirectUrl = $this->sendReturnUrlToCheckout($transaction, $salesChannelContext);
-        } catch (\Exception $e) {
+            $redirectUrl = $this->sendReturnUrlToCheckout($transaction, $context);
+        } catch (\Throwable $e) {
             throw PaymentException::asyncProcessInterrupted(
-                $transaction->getOrderTransaction()->getId(),
+                $transaction->getOrderTransactionId(),
                 'An error occurred during the communication with external payment gateway' . PHP_EOL . $e->getMessage()
             );
         }
-        return new RedirectResponse($redirectUrl);
+
+        return $redirectUrl !== null ? new RedirectResponse($redirectUrl) : null;
     }
 
-    //Webhook handles this part
-    public function finalize(AsyncPaymentTransactionStruct $transaction, Request $request, SalesChannelContext $salesChannelContext): void
+    // Webhook handles this part
+    public function finalize(Request $request, PaymentTransactionStruct $transaction, Context $context): void
     {
     }
-    abstract public function sendReturnUrlToCheckout(AsyncPaymentTransactionStruct $transaction, SalesChannelContext $context);
+
+    /**
+     * Loads the order transaction together with the order and currency
+     * associations the gateway call needs (amount, currency, order number).
+     */
+    protected function loadOrderTransaction(string $orderTransactionId, Context $context): OrderTransactionEntity
+    {
+        $criteria = new Criteria([$orderTransactionId]);
+        $criteria->addAssociation('order');
+        $criteria->addAssociation('order.currency');
+
+        $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+
+        if (!$orderTransaction instanceof OrderTransactionEntity) {
+            throw PaymentException::invalidTransaction($orderTransactionId);
+        }
+
+        return $orderTransaction;
+    }
+
+    abstract public function sendReturnUrlToCheckout(PaymentTransactionStruct $transaction, Context $context): ?string;
 }

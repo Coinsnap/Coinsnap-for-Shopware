@@ -12,51 +12,38 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\PaymentHandler;
 
-use Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Psr\Log\LoggerInterface;
-use Coinsnap\Shopware\Configuration\ConfigurationService;
-use Coinsnap\Shopware\Client\ClientInterface;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
+use Shopware\Core\Framework\Context;
 
 class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethodHandler
 {
-    private ClientInterface $client;
-    private ConfigurationService  $configurationService;
-    private OrderTransactionStateHandler $transactionStateHandler;
-    private LoggerInterface $logger;
-
-    public function __construct(ClientInterface $client, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, LoggerInterface $logger)
-    {
-        $this->client = $client;
-        $this->configurationService = $configurationService;
-        $this->transactionStateHandler = $transactionStateHandler;
-        $this->logger = $logger;
-        parent::__construct($client, $configurationService, $transactionStateHandler, $logger);
-    }
-    public function sendReturnUrlToCheckout(AsyncPaymentTransactionStruct $transaction, SalesChannelContext $context)
+    public function sendReturnUrlToCheckout(PaymentTransactionStruct $transaction, Context $context): ?string
     {
         try {
-            $accountUrl = $this->baseSuccessUrl . $transaction->getOrderTransaction()->getOrderId();
-            if ($transaction->getOrderTransaction()->getAmount()->getTotalPrice() == 0) {
-                $this->transactionStateHandler->paid($transaction->getOrderTransaction()->getId(), $context->getContext());
-                return $accountUrl;
+            $orderTransaction = $this->loadOrderTransaction($transaction->getOrderTransactionId(), $context);
+            $order = $orderTransaction->getOrder();
+            $returnUrl = $transaction->getReturnUrl();
+
+            if ($orderTransaction->getAmount()->getTotalPrice() == 0) {
+                $this->transactionStateHandler->paid($orderTransaction->getId(), $context);
+                return $returnUrl;
             }
+
             $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices';
             $response = $this->client->sendPostRequest(
                 $uri,
                 [
-                    'amount' => $transaction->getOrderTransaction()->getAmount()->getTotalPrice(),
-                    'currency' => $context->getCurrency()->getIsoCode(),
+                    'amount' => $orderTransaction->getAmount()->getTotalPrice(),
+                    'currency' => $order->getCurrency()->getIsoCode(),
                     'referralCode' => 'DEV17612c35cd8c54d3fad381615',
                     'metadata' =>
                     [
-                        'orderNumber' => $transaction->getOrder()->getOrderNumber(),
-                        'orderId' => $transaction->getOrderTransaction()->getOrderId(),
-                        'transactionId' => $transaction->getOrderTransaction()->getId()
+                        'orderNumber' => $order->getOrderNumber(),
+                        'orderId' => $orderTransaction->getOrderId(),
+                        'transactionId' => $orderTransaction->getId()
                     ],
-                    'orderId' => $transaction->getOrder()->getOrderNumber(),
-                    'redirectUrl' => $accountUrl,
+                    'orderId' => $order->getOrderNumber(),
+                    'redirectUrl' => $returnUrl,
                 ]
             );
 

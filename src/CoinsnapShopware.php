@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Coinsnap\Shopware;
 
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
@@ -183,7 +183,7 @@ class CoinsnapShopware extends Plugin
         ];
 
         /**
-         * @var EntityRepositoryInterface $paymentRepository
+         * @var EntityRepository $paymentRepository
          */
         $paymentRepository = $this->container->get('payment_method.repository');
         $paymentRepository->create([$examplePaymentData], $context);
@@ -192,7 +192,7 @@ class CoinsnapShopware extends Plugin
     private function setPaymentMethodIsActive($paymentMethod, bool $active, Context $context): void
     {
         /**
-         * @var EntityRepositoryInterface $paymentRepository
+         * @var EntityRepository $paymentRepository
          */
         $paymentRepository = $this->container->get('payment_method.repository');
 
@@ -214,7 +214,7 @@ class CoinsnapShopware extends Plugin
     private function getPaymentMethodId($paymentMethod): ?string
     {
         /**
-         * @var EntityRepositoryInterface $paymentRepository
+         * @var EntityRepository $paymentRepository
          */
         $paymentRepository = $this->container->get('payment_method.repository');
 

@@ -9,8 +9,9 @@
             <argument type="service" id="Coinsnap\Shopware\Client\CoinsnapClient"/>
             <argument type="service" id="Coinsnap\Shopware\Configuration\ConfigurationService"/>
             <argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+            <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="Coinsnap\Shopware\Util\Logger"/>
-            <tag name="shopware.payment.method.async" />
+            <tag name="shopware.payment.method" />
         </service>
         <service id="Coinsnap\Shopware\Client\CoinsnapClient">
             <argument type="service" id="Coinsnap\Shopware\Configuration\ConfigurationService"/>
