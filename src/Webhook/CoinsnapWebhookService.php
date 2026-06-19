@@ -155,89 +155,98 @@ class CoinsnapWebhookService implements WebhookServiceInterface
             );
         }
 
-        $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
-        $responseBody = $this->client->sendGetRequest($uri);
+        try {
+            $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
+            $responseBody = $this->client->sendGetRequest($uri);
 
-        $orderNumber = $responseBody['metadata']['orderNumber'] ?? null;
-        $transactionId = $responseBody['metadata']['transactionId'] ?? null;
+            $orderNumber = $responseBody['metadata']['orderNumber'] ?? null;
+            $transactionId = $responseBody['metadata']['transactionId'] ?? null;
 
-        if ($orderNumber === null || $transactionId === null) {
-            $this->logger->error('Missing order metadata for invoice ' . $body['invoiceId']);
+            if ($orderNumber === null || $transactionId === null) {
+                $this->logger->error('Missing order metadata for invoice ' . $body['invoiceId']);
+                return new Response(
+                  json_encode(['error' => 'Missing order metadata']),
+                  Response::HTTP_UNPROCESSABLE_ENTITY,
+                  ['Content-Type' => 'application/json']
+                );
+            }
+
+            $orderId = $this->orderService->getId($orderNumber, $context);
+
+            if ($orderId === null) {
+                $this->logger->error('No order found for order number ' . $orderNumber);
+                return new Response(
+                  json_encode(['error' => 'Order not found']),
+                  Response::HTTP_NOT_FOUND,
+                  ['Content-Type' => 'application/json']
+                );
+            }
+
+            switch ($body['type']) {
+                case 'Processing': // The invoice is paid in full.
+                    $this->transactionStateHandler->process($transactionId, $context);
+                    $this->orderRepository->upsert(
+                      [
+                        [
+                          'id' => $orderId,
+                          'customFields' => [
+                            'coinsnapInvoiceId' => $body['invoiceId'],
+                            'coinsnapOrderStatus' => 'processing',
+                          ],
+                        ],
+                      ],
+                      $context
+                    );
+                    $this->logger->info('Invoice settled, waiting for payment to settle.');
+                    break;
+                case 'Expired':
+                    $underpaid = !empty($body['underpaid']);
+                    $status = $underpaid ? 'partially_paid' : 'expired';
+                    $this->orderRepository->upsert(
+                      [
+                        [
+                          'id' => $orderId,
+                          'customFields' => [
+                            'coinsnapInvoiceId' => $body['invoiceId'],
+                            'coinsnapOrderStatus' => $status,
+                          ],
+                        ],
+                      ],
+                      $context
+                    );
+                    if ($underpaid) {
+                        $this->transactionStateHandler->payPartially($transactionId, $context);
+                    }
+                    $this->logger->info('Invoice expired.');
+                    break;
+                case 'Settled':
+                    $this->orderRepository->upsert(
+                      [
+                        [
+                          'id' => $orderId,
+                          'customFields' => [
+                            'coinsnapInvoiceId' => $body['invoiceId'],
+                            'coinsnapOrderStatus' => 'settled',
+                          ],
+                        ],
+                      ],
+                      $context
+                    );
+                    $this->transactionStateHandler->paid($transactionId, $context);
+                    $this->logger->info('Invoice payment settled.');
+                    break;
+                default:
+                    $this->logger->info('Unhandled webhook event type: ' . $body['type']);
+                    break;
+            }
+            return new Response('success', Response::HTTP_OK);
+        } catch (\Throwable $e) {
+            $this->logger->error('Webhook processing failed: ' . $e->getMessage());
             return new Response(
-              json_encode(['error' => 'Missing order metadata']),
-              Response::HTTP_UNPROCESSABLE_ENTITY,
+              json_encode(['error' => 'Webhook processing failed']),
+              Response::HTTP_INTERNAL_SERVER_ERROR,
               ['Content-Type' => 'application/json']
             );
         }
-
-        $orderId = $this->orderService->getId($orderNumber, $context);
-
-        if ($orderId === null) {
-            $this->logger->error('No order found for order number ' . $orderNumber);
-            return new Response(
-              json_encode(['error' => 'Order not found']),
-              Response::HTTP_NOT_FOUND,
-              ['Content-Type' => 'application/json']
-            );
-        }
-
-        switch ($body['type']) {
-            case 'Processing': // The invoice is paid in full.
-                $this->transactionStateHandler->process($transactionId, $context);
-                $this->orderRepository->upsert(
-                  [
-                    [
-                      'id' => $orderId,
-                      'customFields' => [
-                        'coinsnapInvoiceId' => $body['invoiceId'],
-                        'coinsnapOrderStatus' => 'processing',
-                      ],
-                    ],
-                  ],
-                  $context
-                );
-                $this->logger->info('Invoice settled, waiting for payment to settle.');
-                break;
-            case 'Expired':
-                $underpaid = !empty($body['underpaid']);
-                $status = $underpaid ? 'partially_paid' : 'expired';
-                $this->orderRepository->upsert(
-                  [
-                    [
-                      'id' => $orderId,
-                      'customFields' => [
-                        'coinsnapInvoiceId' => $body['invoiceId'],
-                        'coinsnapOrderStatus' => $status,
-                      ],
-                    ],
-                  ],
-                  $context
-                );
-                if ($underpaid) {
-                    $this->transactionStateHandler->payPartially($transactionId, $context);
-                }
-                $this->logger->info('Invoice expired.');
-                break;
-            case 'Settled':
-                $this->orderRepository->upsert(
-                  [
-                    [
-                      'id' => $orderId,
-                      'customFields' => [
-                        'coinsnapInvoiceId' => $body['invoiceId'],
-                        'coinsnapOrderStatus' => 'settled',
-                      ],
-                    ],
-                  ],
-                  $context
-                );
-                $this->transactionStateHandler->paid($transactionId, $context);
-                $this->logger->info('Invoice payment settled.');
-                break;
-            default:
-                $this->logger->info('Unhandled webhook event type: ' . $body['type']);
-                break;
-        }
-        return new Response('success', Response::HTTP_OK);
     }
 }
