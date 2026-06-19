@@ -242,14 +242,16 @@ class CoinsnapShopware extends Plugin
     private function ensureMedia(Context $context, string $logoName): string
     {
         $filePath = realpath(__DIR__ . '/Resources/icons/' . strtolower($logoName) . '.svg');
-        $fileName = hash_file('md5', $filePath);
-        $media = $this->getMediaEntity($fileName, $context);
-        $mediaRepository = $this->container->get('media.repository');
+        $savedFileName = \sprintf("coinsnap_%s", strtolower($logoName));
 
+        // Look up by the name the file is actually stored under, so re-installs
+        // and upgrades don't try to persist a media file that already exists.
+        $media = $this->getMediaEntity($savedFileName, $context);
         if ($media) {
             return $media->getId();
         }
 
+        $mediaRepository = $this->container->get('media.repository');
         $mediaFile = new MediaFile(
             $filePath,
             mime_content_type($filePath),
@@ -266,7 +268,6 @@ class CoinsnapShopware extends Plugin
             $context
         );
         $fileSaver = $this->container->get(FileSaver::class);
-        $savedFileName = \sprintf("coinsnap_%s", strtolower($logoName));
         $fileSaver->persistFileToMedia(
             $mediaFile,
             $savedFileName,
