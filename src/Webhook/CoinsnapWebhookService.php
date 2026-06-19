@@ -147,14 +147,44 @@ class CoinsnapWebhookService implements WebhookServiceInterface
               ['Content-Type' => 'application/json']
             );
         }
+        if (empty($body['invoiceId']) || empty($body['type'])) {
+            $this->logger->error('Missing invoiceId or type in webhook payload');
+            return new Response(
+              json_encode(['error' => 'Missing invoiceId or type']),
+              Response::HTTP_BAD_REQUEST,
+              ['Content-Type' => 'application/json']
+            );
+        }
+
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
         $responseBody = $this->client->sendGetRequest($uri);
 
-        $orderId = $this->orderService->getId($responseBody['metadata']['orderNumber'], $context);
+        $orderNumber = $responseBody['metadata']['orderNumber'] ?? null;
+        $transactionId = $responseBody['metadata']['transactionId'] ?? null;
+
+        if ($orderNumber === null || $transactionId === null) {
+            $this->logger->error('Missing order metadata for invoice ' . $body['invoiceId']);
+            return new Response(
+              json_encode(['error' => 'Missing order metadata']),
+              Response::HTTP_UNPROCESSABLE_ENTITY,
+              ['Content-Type' => 'application/json']
+            );
+        }
+
+        $orderId = $this->orderService->getId($orderNumber, $context);
+
+        if ($orderId === null) {
+            $this->logger->error('No order found for order number ' . $orderNumber);
+            return new Response(
+              json_encode(['error' => 'Order not found']),
+              Response::HTTP_NOT_FOUND,
+              ['Content-Type' => 'application/json']
+            );
+        }
 
         switch ($body['type']) {
             case 'Processing': // The invoice is paid in full.
-                $this->transactionStateHandler->process($responseBody['metadata']['transactionId'], $context);
+                $this->transactionStateHandler->process($transactionId, $context);
                 $this->orderRepository->upsert(
                   [
                     [
@@ -170,8 +200,8 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                 $this->logger->info('Invoice settled, waiting for payment to settle.');
                 break;
             case 'Expired':
-                //TODO: Check if invoice was partially paid
-                $status = $body['underpaid'] ? 'partially_paid' : 'expired';
+                $underpaid = !empty($body['underpaid']);
+                $status = $underpaid ? 'partially_paid' : 'expired';
                 $this->orderRepository->upsert(
                   [
                     [
@@ -184,9 +214,8 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                   ],
                   $context
                 );
-                //TODO: Check if paid partially
-                if ($body['underpaid']) {
-                    $this->transactionStateHandler->payPartially($responseBody['metadata']['transactionId'], $context);
+                if ($underpaid) {
+                    $this->transactionStateHandler->payPartially($transactionId, $context);
                 }
                 $this->logger->info('Invoice expired.');
                 break;
@@ -203,8 +232,11 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                   ],
                   $context
                 );
-                $this->transactionStateHandler->paid($responseBody['metadata']['transactionId'], $context);
+                $this->transactionStateHandler->paid($transactionId, $context);
                 $this->logger->info('Invoice payment settled.');
+                break;
+            default:
+                $this->logger->info('Unhandled webhook event type: ' . $body['type']);
                 break;
         }
         return new Response('success', Response::HTTP_OK);
