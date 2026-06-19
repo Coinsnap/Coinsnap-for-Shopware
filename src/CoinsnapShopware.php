@@ -146,7 +146,7 @@ class CoinsnapShopware extends Plugin
                 'CoinsnapShopware.config.btcpayStorePaymentMethodBTC',
                 'CoinsnapShopware.config.btcpayStorePaymentMethodLightning',
                 'CoinsnapShopware.config.btcpayStorePaymentMethodMonero',
-                'CoinsnapShopware.configbtcpayStorePaymentMethodLitecoin',
+                'CoinsnapShopware.config.btcpayStorePaymentMethodLitecoin',
             ];
             foreach ($configKeysToDelete as $configKey) {
                 $configService->delete($configKey);

@@ -42,7 +42,7 @@ Component.register("coinsnap-button", {
       if (!this.credentialsExist()) {
         this.isLoading = false;
         return this.createNotificationWarning({
-          title: "BTCPay Server",
+          title: "Coinsnap",
           message: this.$t(
             "coinsnap-coinsnap-test-connection.missing_credentials",
           ),
