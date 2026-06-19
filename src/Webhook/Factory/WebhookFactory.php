@@ -18,20 +18,19 @@ use Psr\Log\LoggerInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
 use Coinsnap\Shopware\Webhook\WebhookServiceInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-
+use Coinsnap\Shopware\Order\OrderService;
 use Coinsnap\Shopware\Webhook\CoinsnapWebhookService;
-use Coinsnap\Shopware\Webhook\BTCPayWebhookService;
 
 class WebhookFactory
 {
   private ClientInterface $coinsnapClient;
   private ConfigurationService $configurationService;
   private OrderTransactionStateHandler $transactionStateHandler;
-  private $orderService;
+  private OrderService $orderService;
   private EntityRepository $orderRepository;
   private LoggerInterface $logger;
 
-  public function __construct(ClientInterface $coinsnapClient, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
+  public function __construct(ClientInterface $coinsnapClient, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, OrderService $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
   {
     $this->coinsnapClient = $coinsnapClient;
     $this->configurationService = $configurationService;

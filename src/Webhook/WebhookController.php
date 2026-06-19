@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Coinsnap\Shopware\Webhook;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Coinsnap\Shopware\Webhook\WebhookServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,9 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
 #[Route(defaults: ['_routeScope' => ['api']])]
 class WebhookController extends AbstractController
 {
-    private $webhookRouter;
+    private WebhookRouter $webhookRouter;
 
-    public function __construct($webhookRouter)
+    public function __construct(WebhookRouter $webhookRouter)
     {
         $this->webhookRouter = $webhookRouter;
     }

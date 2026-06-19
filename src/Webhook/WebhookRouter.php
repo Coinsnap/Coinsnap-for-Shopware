@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class WebhookRouter
 {
-    private $webhookFactory;
+    private WebhookFactory $webhookFactory;
 
     public function __construct(WebhookFactory $webhookFactory)
     {

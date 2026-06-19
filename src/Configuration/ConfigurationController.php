@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Coinsnap\Shopware\PaymentMethod\{LightningPaymentMethod, BitcoinPaymentMethod};
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 #[Route(defaults: ['_routeScope' => ['api']])]
 class ConfigurationController extends AbstractController
@@ -26,7 +26,7 @@ class ConfigurationController extends AbstractController
     public function verifyApiKey(Request $request, Context $context)
     {
     }
-    protected function updatePaymentMethodStatus(Context $context, string $paymentMethod, bool $status, $paymentRepository)
+    protected function updatePaymentMethodStatus(Context $context, string $paymentMethod, bool $status, EntityRepository $paymentRepository)
     {
         $paymentMethodClass = new $paymentMethod();
         $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter('handlerIdentifier', $paymentMethodClass->getPaymentHandler()));

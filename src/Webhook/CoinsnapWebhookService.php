@@ -20,8 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Shopware\Core\Framework\Context;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Coinsnap\Shopware\Order\OrderService;
 
 class CoinsnapWebhookService implements WebhookServiceInterface
 {
@@ -29,11 +28,11 @@ class CoinsnapWebhookService implements WebhookServiceInterface
     private ClientInterface $client;
     private ConfigurationService $configurationService;
     private OrderTransactionStateHandler $transactionStateHandler;
-    private $orderService;
+    private OrderService $orderService;
     private EntityRepository $orderRepository;
     private LoggerInterface $logger;
 
-    public function __construct(ClientInterface $client, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
+    public function __construct(ClientInterface $client, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, OrderService $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
     {
         $this->client = $client;
         $this->configurationService = $configurationService;

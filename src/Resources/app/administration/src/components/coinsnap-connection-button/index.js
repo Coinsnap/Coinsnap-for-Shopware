@@ -29,13 +29,11 @@ Component.register("coinsnap-button", {
         this.coinsnapApiKey = r["CoinsnapShopware.config.coinsnapApiKey"];
         this.coinsnapStoreId = r["CoinsnapShopware.config.coinsnapStoreId"];
       })
-      .catch((e) => console.log(e));
+      .catch(() => {});
   },
   computed: {
     isDisabled() {
-      if (!this.coinsnapStoreId || !this.coinsnapApiKey) {
-        return true;
-      }
+      return !this.coinsnapStoreId || !this.coinsnapApiKey;
     },
   },
   methods: {

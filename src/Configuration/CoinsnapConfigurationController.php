@@ -19,7 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Shopware\Core\Framework\Context;
-use Coinsnap\Shopware\PaymentMethod\{CoinsnapLightningPaymentMethod, CoinsnapBitcoinPaymentMethod, CoinsnapBitcoinLightningPaymentMethod};
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
 
 #[Route(defaults: ['_routeScope' => ['api']])]
 class CoinsnapConfigurationController extends ConfigurationController
@@ -27,9 +28,9 @@ class CoinsnapConfigurationController extends ConfigurationController
     private ClientInterface $client;
     private ConfigurationService $configurationService;
     private WebhookServiceInterface $webhookService;
-    private $paymentRepository;
+    private EntityRepository $paymentRepository;
 
-    public function __construct(ClientInterface $client, ConfigurationService $configurationService, WebhookServiceInterface $webhookService, $paymentRepository)
+    public function __construct(ClientInterface $client, ConfigurationService $configurationService, WebhookServiceInterface $webhookService, EntityRepository $paymentRepository)
     {
         $this->client = $client;
         $this->configurationService = $configurationService;

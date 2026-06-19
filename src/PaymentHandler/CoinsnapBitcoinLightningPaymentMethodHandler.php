@@ -50,7 +50,7 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
             return $response['checkoutLink'];
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage(), 0, $e);
         }
     }
 }
