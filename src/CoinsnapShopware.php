@@ -180,6 +180,7 @@ class CoinsnapShopware extends Plugin
 
         $examplePaymentData = [
             'handlerIdentifier' => $paymentMethod->getPaymentHandler(),
+            'technicalName' => $paymentMethod->getTechnicalName(),
             'pluginId' => $pluginId,
             'position' => $paymentMethod->getPosition(),
             'media' => [

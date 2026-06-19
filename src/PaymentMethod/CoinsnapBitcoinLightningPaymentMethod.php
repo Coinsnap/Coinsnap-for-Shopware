@@ -21,6 +21,11 @@ class CoinsnapBitcoinLightningPaymentMethod
         return 'Coinsnap-Bitcoin+Lightning';
     }
 
+    public function getTechnicalName(): string
+    {
+        return 'coinsnap_bitcoin_lightning';
+    }
+
     public function getPosition(): int
     {
         return -2;
