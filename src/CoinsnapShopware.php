@@ -153,8 +153,8 @@ class CoinsnapShopware extends Plugin
             }
         }
 
-        if (version_compare($currentVersion, '2.0.0', '<')) {
-            // 2.0.0 targets Shopware 6.7 and swaps the payment handler base
+        if (version_compare($currentVersion, '1.0.5', '<')) {
+            // 1.0.5 targets Shopware 6.7 and swaps the payment handler base
             // class. Re-register the payment method so its handlerIdentifier is
             // re-linked on existing installs. addPaymentMethod is idempotent.
             $this->addPaymentMethod(new CoinsnapBitcoinLightningPaymentMethod(), $updateContext->getContext());

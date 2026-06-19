@@ -1,4 +1,4 @@
-# 2.0.0
+# 1.0.5
 - Add compatibility with Shopware 6.7 (requires Shopware ~6.7.0)
 - Rewrite the payment handler to the new AbstractPaymentHandler API
 - Replace removed EntityRepositoryInterface with EntityRepository
