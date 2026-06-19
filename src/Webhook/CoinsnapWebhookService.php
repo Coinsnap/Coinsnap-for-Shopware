@@ -113,9 +113,13 @@ class CoinsnapWebhookService implements WebhookServiceInterface
               ['Content-Type' => 'application/json']
             );
         }
-        $body = $request->request->all();
+        // Verify the HMAC against the exact raw bytes Coinsnap signed, then
+        // decode. Re-encoding a parsed array would not reproduce the signed
+        // payload (key order, spacing, escaping all differ).
+        $rawBody = $request->getContent();
+        $body = json_decode($rawBody, true);
 
-        if (empty($body)) {
+        if (empty($body) || !is_array($body)) {
             $this->logger->error('Missing webhook data');
             return new Response(
               json_encode(['error' => 'Missing webhook data']),
@@ -133,9 +137,9 @@ class CoinsnapWebhookService implements WebhookServiceInterface
             );
         }
 
-        $expectedHeader = 'sha256=' . hash_hmac('sha256', json_encode($body), $this->configurationService->getSetting('coinsnapWebhookSecret'));
+        $expectedHeader = 'sha256=' . hash_hmac('sha256', $rawBody, $this->configurationService->getSetting('coinsnapWebhookSecret'));
 
-        if ($signature !== $expectedHeader) {
+        if (!hash_equals($expectedHeader, $signature)) {
             $this->logger->error('Invalid signature');
             return new Response(
               json_encode(['error' => 'Invalid signature']),
