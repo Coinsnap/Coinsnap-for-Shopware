@@ -1,6 +1,5 @@
 {
   "coinsnap-coinsnap-test-connection": {
-    "save": "Save credentials",
     "button": "Test connection",
     "success": "The plugin is connected to the server",
     "error": "Something went wrong. Check if credentials are valid and try again.",

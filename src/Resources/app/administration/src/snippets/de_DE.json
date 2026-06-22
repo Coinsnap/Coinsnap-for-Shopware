@@ -1,6 +1,5 @@
 {
   "coinsnap-coinsnap-test-connection": {
-    "save": "Anmeldeinformationen speichern",
     "button": "Verbindung testen",
     "success": "Das Plugin ist mit dem Server verbunden",
     "error": "Ein Fehler ist aufgetreten. Prüfen Sie, ob die Anmeldedaten gültig sind und versuchen Sie es erneut.",
