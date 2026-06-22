@@ -6,14 +6,15 @@
     "missing_credentials": "You need to save API key and store ID first."
   },
   "coinsnap-btcpay-generate-credentials": {
-    "button": "Connect to BTCPay Server",
+    "button": "1. Connect to BTCPay Server",
     "info": "Save the BTCPay Server URL first, then authorize the API key on your BTCPay Server.",
     "missing_server": "You need to save the BTCPay Server URL first."
   },
   "coinsnap-btcpay-test-connection": {
-    "button": "Test connection",
+    "button": "2. Test connection",
     "success": "The plugin is connected to your BTCPay Server",
     "error": "Something went wrong. Check if credentials are valid and try again.",
-    "missing_credentials": "You need to save the BTCPay Server URL, API key and store ID first."
+    "missing_credentials": "You need to save the BTCPay Server URL, API key and store ID first.",
+    "finishing": "Credentials received from BTCPay. Finishing the connection..."
   }
 }

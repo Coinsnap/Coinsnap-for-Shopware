@@ -19,11 +19,72 @@ Component.register("coinsnap-btcpay-buttons", {
   data() {
     return {
       isLoading: false,
+      // Gates the "Test connection" button: it only makes sense once the
+      // BTCPay URL, API key and store id are saved.
+      credentialsReady: false,
     };
+  },
+  mounted() {
+    this.loadConnectionState();
+    // Saving config in Shopware doesn't remount this component, so poll the
+    // saved values to keep the button's enabled state in sync after the
+    // merchant saves credentials.
+    this.credentialsPoll = setInterval(() => this.refreshCredentialsReady(), 2000);
+  },
+  beforeUnmount() {
+    clearInterval(this.credentialsPoll);
   },
   methods: {
     removeTrailingSlash(serverUrl) {
       return serverUrl.replace(/\/$/, "");
+    },
+    // Reads the saved credentials and toggles the Test button accordingly.
+    // Returns the values so callers can reuse them without a second request.
+    refreshCredentialsReady() {
+      const systemConfig = ApiService.getByName("systemConfigApiService");
+      return systemConfig
+        .getValues(CONFIG_DOMAIN)
+        .then((values) => {
+          this.credentialsReady = Boolean(
+            values[`${CONFIG_DOMAIN}.btcpayServerUrl`] &&
+              values[`${CONFIG_DOMAIN}.btcpayApiKey`] &&
+              values[`${CONFIG_DOMAIN}.btcpayServerStoreId`],
+          );
+          return values;
+        })
+        .catch(() => ({}));
+    },
+    // When the merchant has just returned from BTCPay's authorization
+    // (credentials present but not yet verified), finishes the connection
+    // automatically so they aren't left with stored keys but no registered
+    // webhook. Guarded with a session flag so a persistently failing
+    // connection isn't retried on every visit.
+    loadConnectionState() {
+      this.refreshCredentialsReady().then((values) => {
+        const apiKey = values[`${CONFIG_DOMAIN}.btcpayApiKey`];
+        const storeId = values[`${CONFIG_DOMAIN}.btcpayServerStoreId`];
+        const connected = values[`${CONFIG_DOMAIN}.btcpayIntegrationStatus`];
+
+        let alreadyTried = false;
+        try {
+          alreadyTried = sessionStorage.getItem("coinsnapBtcpayAutoFinish") === "1";
+        } catch (e) {
+          alreadyTried = false;
+        }
+
+        if (apiKey && storeId && !connected && !alreadyTried) {
+          try {
+            sessionStorage.setItem("coinsnapBtcpayAutoFinish", "1");
+          } catch (e) {
+            /* sessionStorage unavailable, proceed anyway */
+          }
+          this.createNotificationInfo({
+            title: "BTCPay Server",
+            message: this.$t("coinsnap-btcpay-test-connection.finishing"),
+          });
+          this.testConnection();
+        }
+      });
     },
     // Opens BTCPay's API-key authorization page. The server URL must be saved
     // first: Shopware 6.7 no longer exposes the config key as a DOM element id,
