@@ -36,4 +36,18 @@ class OrderService
         $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
         return $this->orderRepository->searchIds($criteria, $context)->firstId();
     }
+
+    /**
+     * Returns the technical name of the order transaction's current state, or
+     * null if the order/transaction or its state cannot be resolved.
+     */
+    public function getTransactionState(string $orderId, string $transactionId, Context $context): ?string
+    {
+        $criteria = new Criteria([$orderId]);
+        $criteria->addAssociation('transactions.stateMachineState');
+        $order = $this->orderRepository->search($criteria, $context)->first();
+        $transaction = $order?->getTransactions()?->get($transactionId);
+
+        return $transaction?->getStateMachineState()?->getTechnicalName();
+    }
 }

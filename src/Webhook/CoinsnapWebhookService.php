@@ -14,6 +14,7 @@ namespace Coinsnap\Shopware\Webhook;
 
 use Coinsnap\Shopware\Client\ClientInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -157,7 +158,7 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         }
 
         try {
-            $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . $body['invoiceId'];
+            $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices/' . rawurlencode($body['invoiceId']);
             $responseBody = $this->client->sendGetRequest($uri);
 
             $orderNumber = $responseBody['metadata']['orderNumber'] ?? null;
@@ -181,6 +182,13 @@ class CoinsnapWebhookService implements WebhookServiceInterface
                   Response::HTTP_NOT_FOUND,
                   ['Content-Type' => 'application/json']
                 );
+            }
+
+            // Terminal merchant/bank states are sticky: a replayed or late
+            // webhook must not resurrect a refunded or cancelled payment.
+            if ($this->isTransactionLocked($orderId, $transactionId, $context)) {
+                $this->logger->info('Ignoring webhook: transaction already in a terminal state for order ' . $orderNumber);
+                return new Response('ignored', Response::HTTP_OK);
             }
 
             switch ($body['type']) {
@@ -287,5 +295,22 @@ class CoinsnapWebhookService implements WebhookServiceInterface
         } catch (StateMachineException $e) {
             $this->logger->info('Skipping payment state transition: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Whether the transaction is in a terminal state set by a merchant or bank
+     * action (refund, cancellation, chargeback) that a payment webhook must
+     * never override.
+     */
+    private function isTransactionLocked(string $orderId, string $transactionId, Context $context): bool
+    {
+        $state = $this->orderService->getTransactionState($orderId, $transactionId, $context);
+
+        return in_array($state, [
+            OrderTransactionStates::STATE_REFUNDED,
+            OrderTransactionStates::STATE_PARTIALLY_REFUNDED,
+            OrderTransactionStates::STATE_CANCELLED,
+            OrderTransactionStates::STATE_CHARGEBACK,
+        ], true);
     }
 }

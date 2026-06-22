@@ -57,6 +57,7 @@
         </service>
         <service id="Coinsnap\Shopware\Webhook\WebhookRouter" public="true">
             <argument type="service" id="Coinsnap\Shopware\Webhook\Factory\WebhookFactory"/>
+            <argument type="service" id="Coinsnap\Shopware\Configuration\ConfigurationService"/>
         </service>
         <service id="Coinsnap\Shopware\Webhook\WebhookController" public="true">
             <argument type="service" id="Coinsnap\Shopware\Webhook\WebhookRouter"/>
