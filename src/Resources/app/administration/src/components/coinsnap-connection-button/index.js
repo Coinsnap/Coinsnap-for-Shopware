@@ -19,23 +19,20 @@ Component.register("coinsnap-button", {
   data() {
     return {
       isLoading: false,
-      // Gates the "Test connection" button: it only makes sense once the
-      // Coinsnap store id and API key are saved.
+      // Gates the Test button until credentials are saved.
       credentialsReady: false,
     };
   },
   mounted() {
     this.refreshCredentialsReady();
-    // Saving config in Shopware doesn't remount this component, so poll the
-    // saved values to keep the button's enabled state in sync after the
-    // merchant saves credentials.
+    // Saving config doesn't remount, so poll to keep the button state in sync.
     this.credentialsPoll = setInterval(() => this.refreshCredentialsReady(), 2000);
   },
   beforeUnmount() {
     clearInterval(this.credentialsPoll);
   },
   methods: {
-    // Reads the saved credentials and toggles the Test button accordingly.
+    // Toggle the Test button from saved credentials; returns the values.
     refreshCredentialsReady() {
       const systemConfig = ApiService.getByName("systemConfigApiService");
       return systemConfig
@@ -49,11 +46,7 @@ Component.register("coinsnap-button", {
         })
         .catch(() => ({}));
     },
-    // Test connection validates the SAVED credentials: the server-side
-    // verify endpoint reads them from the system config, so the values must
-    // be persisted first (via Shopware's Save button). Reading the saved
-    // config here avoids depending on the admin form's DOM, which changed
-    // in Shopware 6.7 and no longer exposes the config key as an element id.
+    // Verifies the SAVED credentials (server reads them from system config).
     testConnection() {
       this.isLoading = true;
       const systemConfig = ApiService.getByName("systemConfigApiService");
@@ -91,8 +84,7 @@ Component.register("coinsnap-button", {
                 title: "Coinsnap",
                 message: this.$t("coinsnap-coinsnap-test-connection.success"),
               });
-              // Refresh the gating state instead of a hard page reload, which
-              // would discard any unsaved input elsewhere on the config page.
+              // Refresh gating state instead of a hard reload (avoids losing unsaved input).
               this.refreshCredentialsReady();
             })
             .catch(() => {
