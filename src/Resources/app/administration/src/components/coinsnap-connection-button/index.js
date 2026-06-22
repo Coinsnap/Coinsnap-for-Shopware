@@ -14,7 +14,7 @@ const CONFIG_DOMAIN = "CoinsnapShopware.config";
 
 Component.register("coinsnap-button", {
   template: template,
-  inject: [["coinsnapApiService"]],
+  inject: ["coinsnapApiService"],
   mixins: [Mixin.getByName("notification")],
   data() {
     return {
