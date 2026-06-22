@@ -4,28 +4,32 @@
         <title>Coinsnap</title>
         <input-field>
             <name>coinsnapStoreId</name>
-            <label>Coinsnap Store Id</label>
+            <label>Coinsnap Store ID</label>
+            <helpText>Enter your Store ID and API Key, click Save, then use Test connection.</helpText>
+            <helpText lang="de-DE">Geben Sie Ihre Store-ID und Ihren API-Schlüssel ein, klicken Sie auf Speichern und nutzen Sie dann Verbindung testen.</helpText>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>coinsnapApiKey</name>
             <label>Coinsnap API Key</label>
+            <helpText>Your Coinsnap API key. It is stored securely and never shown to the storefront.</helpText>
+            <helpText lang="de-DE">Ihr Coinsnap API-Schlüssel. Er wird sicher gespeichert und nie im Shop angezeigt.</helpText>
         </input-field>
         <input-field>
             <name>coinsnapWebhookId</name>
-            <label>Webhook id</label>
+            <label>Webhook ID</label>
             <disabled>true</disabled>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>coinsnapWebhookSecret</name>
             <disabled>true</disabled>
             <label>Webhook secret</label>
         </input-field>
         <input-field type="checkbox">
             <name>coinsnapIntegrationStatus</name>
-            <label>Connected to the Coinsnap</label>
+            <label>Connected to Coinsnap</label>
             <disabled>true</disabled>
             <helpText>It shows whether or not the plugin is connected to Coinsnap</helpText>
-            <helpText lang="de-DE"> Es zeigt an, ob das Plugin mit Ihrem Coinsnap verbunden ist oder nicht</helpText>
+            <helpText lang="de-DE">Es zeigt an, ob das Plugin mit Ihrem Coinsnap verbunden ist oder nicht</helpText>
         </input-field>
         <component name="coinsnap-button">
             <name>buttons</name>
@@ -38,20 +42,22 @@
             <name>btcpayServerUrl</name>
             <label>BTCPay Server URL</label>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>btcpayApiKey</name>
             <label>BTCPay API Key</label>
+            <helpText>Filled in automatically after you authorize the plugin on your BTCPay Server. Stored securely and never shown to the storefront.</helpText>
+            <helpText lang="de-DE">Wird automatisch ausgefüllt, nachdem Sie das Plugin auf Ihrem BTCPay Server autorisiert haben. Sicher gespeichert und nie im Shop angezeigt.</helpText>
         </input-field>
         <input-field>
             <name>btcpayServerStoreId</name>
-            <label>BTCPay Server Store Id</label>
+            <label>BTCPay Server Store ID</label>
         </input-field>
         <input-field>
             <name>btcpayWebhookId</name>
-            <label>Webhook id</label>
+            <label>Webhook ID</label>
             <disabled>true</disabled>
         </input-field>
-        <input-field>
+        <input-field type="password">
             <name>btcpayWebhookSecret</name>
             <label>Webhook secret</label>
             <disabled>true</disabled>
@@ -67,11 +73,15 @@
             <name>btcpayStorePaymentMethodBTC</name>
             <label>Bitcoin enabled on BTCPay store</label>
             <disabled>true</disabled>
+            <helpText>Read-only diagnostic. Reflects whether on-chain Bitcoin is enabled on the connected BTCPay store. Filled in after a successful connection.</helpText>
+            <helpText lang="de-DE">Nur-Lese-Diagnose. Zeigt an, ob On-Chain-Bitcoin im verbundenen BTCPay Store aktiviert ist. Wird nach erfolgreicher Verbindung ausgefüllt.</helpText>
         </input-field>
         <input-field type="bool">
             <name>btcpayStorePaymentMethodLightning</name>
             <label>Lightning enabled on BTCPay store</label>
             <disabled>true</disabled>
+            <helpText>Read-only diagnostic. Reflects whether the Lightning Network is enabled on the connected BTCPay store. Filled in after a successful connection.</helpText>
+            <helpText lang="de-DE">Nur-Lese-Diagnose. Zeigt an, ob das Lightning-Netzwerk im verbundenen BTCPay Store aktiviert ist. Wird nach erfolgreicher Verbindung ausgefüllt.</helpText>
         </input-field>
         <component name="coinsnap-btcpay-buttons">
             <name>buttons</name>

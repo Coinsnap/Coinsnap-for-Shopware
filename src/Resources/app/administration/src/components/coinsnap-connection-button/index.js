@@ -19,9 +19,36 @@ Component.register("coinsnap-button", {
   data() {
     return {
       isLoading: false,
+      // Gates the "Test connection" button: it only makes sense once the
+      // Coinsnap store id and API key are saved.
+      credentialsReady: false,
     };
   },
+  mounted() {
+    this.refreshCredentialsReady();
+    // Saving config in Shopware doesn't remount this component, so poll the
+    // saved values to keep the button's enabled state in sync after the
+    // merchant saves credentials.
+    this.credentialsPoll = setInterval(() => this.refreshCredentialsReady(), 2000);
+  },
+  beforeUnmount() {
+    clearInterval(this.credentialsPoll);
+  },
   methods: {
+    // Reads the saved credentials and toggles the Test button accordingly.
+    refreshCredentialsReady() {
+      const systemConfig = ApiService.getByName("systemConfigApiService");
+      return systemConfig
+        .getValues(CONFIG_DOMAIN)
+        .then((values) => {
+          this.credentialsReady = Boolean(
+            values[`${CONFIG_DOMAIN}.coinsnapStoreId`] &&
+              values[`${CONFIG_DOMAIN}.coinsnapApiKey`],
+          );
+          return values;
+        })
+        .catch(() => ({}));
+    },
     // Test connection validates the SAVED credentials: the server-side
     // verify endpoint reads them from the system config, so the values must
     // be persisted first (via Shopware's Save button). Reading the saved
@@ -64,7 +91,9 @@ Component.register("coinsnap-button", {
                 title: "Coinsnap",
                 message: this.$t("coinsnap-coinsnap-test-connection.success"),
               });
-              window.location.reload();
+              // Refresh the gating state instead of a hard page reload, which
+              // would discard any unsaved input elsewhere on the config page.
+              this.refreshCredentialsReady();
             })
             .catch(() => {
               this.isLoading = false;

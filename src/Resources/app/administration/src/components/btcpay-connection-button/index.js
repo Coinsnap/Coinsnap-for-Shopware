@@ -103,11 +103,16 @@ Component.register("coinsnap-btcpay-buttons", {
 
         const filteredUrl = this.removeTrailingSlash(serverUrl);
         // One-time nonce echoed back by BTCPay so the unauthenticated callback
-        // can reject forged credential overwrites.
-        const state =
-          window.crypto && window.crypto.randomUUID
-            ? window.crypto.randomUUID()
-            : String(Date.now()) + Math.random().toString(36).slice(2);
+        // can reject forged credential overwrites. We require a CSPRNG: a
+        // guessable nonce would weaken the only guard on that public route, so
+        // we refuse to proceed rather than fall back to Math.random.
+        if (!window.crypto || !window.crypto.randomUUID) {
+          return this.createNotificationError({
+            title: "BTCPay Server",
+            message: this.$t("coinsnap-btcpay-generate-credentials.insecure_context"),
+          });
+        }
+        const state = window.crypto.randomUUID();
         const clearedPathname = window.location.pathname.replace("/admin", "/");
         const redirectUrl =
           window.location.origin +
@@ -136,6 +141,12 @@ Component.register("coinsnap-btcpay-buttons", {
               "noopener",
             );
           });
+      })
+      .catch(() => {
+        this.createNotificationError({
+          title: "BTCPay Server",
+          message: this.$t("coinsnap-btcpay-test-connection.error"),
+        });
       });
     },
     testConnection() {
@@ -176,7 +187,11 @@ Component.register("coinsnap-btcpay-buttons", {
                 title: "BTCPay Server",
                 message: this.$t("coinsnap-btcpay-test-connection.success"),
               });
-              window.location.reload();
+              // Refresh the gating state instead of a hard page reload, which
+              // would discard any unsaved input elsewhere on the config page.
+              // The read-only diagnostic fields (webhook id, status) refresh on
+              // the next page load; the success toast confirms the connection.
+              this.refreshCredentialsReady();
             })
             .catch(() => {
               this.isLoading = false;

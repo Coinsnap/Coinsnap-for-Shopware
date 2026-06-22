@@ -8,7 +8,8 @@
   "coinsnap-btcpay-generate-credentials": {
     "button": "1. Connect to BTCPay Server",
     "info": "Save the BTCPay Server URL first, then authorize the API key on your BTCPay Server.",
-    "missing_server": "You need to save the BTCPay Server URL first."
+    "missing_server": "You need to save the BTCPay Server URL first.",
+    "insecure_context": "Your browser blocked secure key generation. Open the admin over HTTPS and try again."
   },
   "coinsnap-btcpay-test-connection": {
     "button": "2. Test connection",

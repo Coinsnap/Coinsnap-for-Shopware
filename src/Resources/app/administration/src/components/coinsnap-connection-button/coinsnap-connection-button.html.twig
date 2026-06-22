@@ -1,3 +1,3 @@
 <sw-container columns="repeat(1, auto)" gap="0px 10px">
-	<sw-button-process class="sw-button-coinsnap" :process-success="isLoading" :is-loading="isLoading" @click="testConnection">{{ $t('coinsnap-coinsnap-test-connection.button') }}</sw-button-process>
+	<sw-button-process v-tooltip.top="{ message: $t('coinsnap-coinsnap-test-connection.missing_credentials'), disabled: credentialsReady }" class="sw-button-coinsnap" :process-success="isLoading" :is-loading="isLoading" :disabled="!credentialsReady" @click="testConnection">{{ $t('coinsnap-coinsnap-test-connection.button') }}</sw-button-process>
 </sw-container>

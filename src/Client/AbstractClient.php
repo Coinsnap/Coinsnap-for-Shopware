@@ -81,7 +81,7 @@ class AbstractClient
                         'reason' => $reasonPhrase,
                         'method' => $method,
                         'uri' => $uri,
-                        'options' => $options,
+                        'options' => $this->redactOptions($options),
                         'message' => $message,
                         'body' => $body
                     ]
@@ -93,5 +93,26 @@ class AbstractClient
             $this->logger->error('Guzzle request failed: Unknown error');
             throw new \Exception('Unknown error');
         }
+    }
+
+    /**
+     * Removes credential-bearing headers from the request options before they
+     * are written to the log, so API keys and auth tokens never leak into log
+     * files. Header names are matched case-insensitively.
+     */
+    private function redactOptions(array $options): array
+    {
+        if (!isset($options['headers']) || !is_array($options['headers'])) {
+            return $options;
+        }
+
+        $sensitive = ['authorization', 'token', 'x-coinsnap-sig', 'btcpay-sig'];
+        foreach ($options['headers'] as $name => $value) {
+            if (in_array(strtolower((string) $name), $sensitive, true)) {
+                $options['headers'][$name] = '***redacted***';
+            }
+        }
+
+        return $options;
     }
 }
