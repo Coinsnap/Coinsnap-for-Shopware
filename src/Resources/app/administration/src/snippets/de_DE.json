@@ -5,5 +5,16 @@
     "success": "Das Plugin ist mit dem Server verbunden",
     "error": "Ein Fehler ist aufgetreten. Prüfen Sie, ob die Anmeldedaten gültig sind und versuchen Sie es erneut.",
     "missing_credentials": "Sie müssen zuerst den API-Schlüssel speichern und die ID speichern."
+  },
+  "coinsnap-btcpay-generate-credentials": {
+    "button": "Mit BTCPay Server verbinden",
+    "info": "Speichern Sie zuerst die BTCPay Server URL und autorisieren Sie dann den API-Schlüssel auf Ihrem BTCPay Server.",
+    "missing_server": "Sie müssen zuerst die BTCPay Server URL speichern."
+  },
+  "coinsnap-btcpay-test-connection": {
+    "button": "Verbindung testen",
+    "success": "Das Plugin ist mit Ihrem BTCPay Server verbunden",
+    "error": "Ein Fehler ist aufgetreten. Prüfen Sie, ob die Anmeldedaten gültig sind und versuchen Sie es erneut.",
+    "missing_credentials": "Sie müssen zuerst die BTCPay Server URL, den API-Schlüssel und die Store-ID speichern."
   }
 }

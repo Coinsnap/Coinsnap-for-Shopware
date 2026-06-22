@@ -32,6 +32,8 @@ use Shopware\Core\Content\Media\File\FileSaver;
 use Coinsnap\Shopware\PaymentMethod\PaymentMethods;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
+use Coinsnap\Shopware\PaymentMethod\BTCPayBitcoinPaymentMethod;
+use Coinsnap\Shopware\PaymentMethod\BTCPayLightningPaymentMethod;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class CoinsnapShopware extends Plugin
@@ -89,6 +91,8 @@ class CoinsnapShopware extends Plugin
             );
         }
         $this->addPaymentMethod(new CoinsnapBitcoinLightningPaymentMethod(), $context->getContext());
+        $this->addPaymentMethod(new BTCPayBitcoinPaymentMethod(), $context->getContext());
+        $this->addPaymentMethod(new BTCPayLightningPaymentMethod(), $context->getContext());
     }
 
     public function uninstall(UninstallContext $context): void
@@ -158,6 +162,14 @@ class CoinsnapShopware extends Plugin
             // class. Re-register the payment method so its handlerIdentifier is
             // re-linked on existing installs. addPaymentMethod is idempotent.
             $this->addPaymentMethod(new CoinsnapBitcoinLightningPaymentMethod(), $updateContext->getContext());
+        }
+
+        if (version_compare($currentVersion, '1.0.6', '<')) {
+            // 1.0.6 reintroduces BTCPay Server support alongside Coinsnap.
+            // Register the BTCPay payment methods on existing installs.
+            // addPaymentMethod is idempotent.
+            $this->addPaymentMethod(new BTCPayBitcoinPaymentMethod(), $updateContext->getContext());
+            $this->addPaymentMethod(new BTCPayLightningPaymentMethod(), $updateContext->getContext());
         }
 
         parent::update($updateContext);

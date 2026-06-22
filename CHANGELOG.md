@@ -1,3 +1,10 @@
+# 1.0.6
+- Reintroduce BTCPay Server support alongside Coinsnap (both providers can be configured at once)
+- Add BTCPay Bitcoin and Lightning payment methods
+- Add a BTCPay configuration card with an API-key authorization and Test Connection flow
+- Route incoming webhooks to Coinsnap or BTCPay based on the signature header
+- Register the BTCPay payment methods on upgrade from earlier versions
+
 # 1.0.5
 - Add compatibility with Shopware 6.7 (requires Shopware ~6.7.0)
 - Rewrite the payment handler to the new AbstractPaymentHandler API

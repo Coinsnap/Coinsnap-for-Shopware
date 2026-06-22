@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Coinsnap\Shopware\Webhook;
 
 use Coinsnap\Shopware\Webhook\Factory\WebhookFactory;
+use Coinsnap\Shopware\Webhook\BTCPayWebhookService;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -36,6 +37,11 @@ class WebhookRouter
     }
     public function getProviderFromRequest(Request $request): string
     {
+        // Coinsnap and BTCPay register the same webhook endpoint, so the
+        // provider is determined by which signature header is present.
+        if ($request->headers->has(BTCPayWebhookService::REQUIRED_HEADER)) {
+            return 'btcpay';
+        }
         return 'coinsnap';
     }
 }
