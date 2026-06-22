@@ -38,21 +38,12 @@ class BTCPayServerClient extends AbstractClient implements ClientInterface
         parent::__construct($client, $logger);
     }
 
-    /**
-     * Validates the configured BTCPay Server URL before it is used as the
-     * Guzzle base_uri. We only enforce an http/https scheme: BTCPay is
-     * frequently self-hosted on a private network or a custom domain, so
-     * blocking private/loopback addresses would break legitimate setups.
-     * Rejecting non-http(s) schemes still removes the file://, gopher:// and
-     * similar request-forgery vectors Guzzle would otherwise accept.
-     */
+    // Only enforce http/https; private/self-hosted BTCPay hosts are legitimate.
     private function resolveBaseUri(): string
     {
         $url = (string) $this->configurationService->getSetting('btcpayServerUrl');
 
-        // This service is instantiated by the container even on Coinsnap-only
-        // installs where BTCPay is never configured, so an empty URL must stay
-        // permissible (Guzzle simply has no base_uri and BTCPay is unused).
+        // Empty on Coinsnap-only installs; leave base_uri unset.
         if ($url === '') {
             return $url;
         }

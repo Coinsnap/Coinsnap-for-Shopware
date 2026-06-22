@@ -94,18 +94,13 @@ class AbstractClient
             $this->logger->error('Guzzle request failed: Unknown error');
             throw new \Exception('Unknown error');
         } catch (GuzzleException $e) {
-            // Connection-level failures (timeout, DNS, refused) are not
-            // RequestExceptions and carry no response, so handle them here.
+            // Connection-level errors (timeout, DNS, refused) carry no response.
             $this->logger->error('Guzzle request failed: ' . $e->getMessage());
             throw new \Exception($e->getMessage());
         }
     }
 
-    /**
-     * Removes credential-bearing headers from the request options before they
-     * are written to the log, so API keys and auth tokens never leak into log
-     * files. Header names are matched case-insensitively.
-     */
+    // Mask credential headers before request options are logged.
     private function redactOptions(array $options): array
     {
         if (!isset($options['headers']) || !is_array($options['headers'])) {
@@ -122,11 +117,7 @@ class AbstractClient
         return $options;
     }
 
-    /**
-     * Redacts credential fields (e.g. the webhook secret returned when a
-     * webhook is created) from a JSON response body before it is logged.
-     * Non-JSON bodies are returned unchanged.
-     */
+    // Mask credential fields (e.g. the webhook secret) in logged response bodies.
     private function redactBody(?string $body): ?string
     {
         if ($body === null || $body === '') {

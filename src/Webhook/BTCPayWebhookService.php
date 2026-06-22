@@ -113,9 +113,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
               ['Content-Type' => 'application/json']
             );
         }
-        // Verify the HMAC against the exact raw bytes BTCPay signed, then
-        // decode. Re-encoding a parsed array would not reproduce the signed
-        // payload (key order, spacing, escaping all differ).
+        // HMAC over the raw bytes; a re-encoded array would not match.
         $rawBody = $request->getContent();
         $body = json_decode($rawBody, true);
 
@@ -186,8 +184,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
                 );
             }
 
-            // Terminal merchant/bank states are sticky: a replayed or late
-            // webhook must not resurrect a refunded or cancelled payment.
+            // Terminal merchant/bank states are sticky against replays.
             if ($this->isTransactionLocked($orderId, $transactionId, $context)) {
                 $this->logger->info('Ignoring webhook: transaction already in a terminal state for order ' . $orderNumber);
                 return new Response('ignored', Response::HTTP_OK);
@@ -260,15 +257,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
         }
     }
 
-    /**
-     * Runs a transaction state transition, swallowing state-machine rejections.
-     *
-     * BTCPay redelivers webhooks and can deliver them out of order. When the
-     * state machine rejects a transition (illegal from the current state, or
-     * unnecessary because it was already applied) the transaction is already in
-     * a more advanced state, so this is treated as an idempotent no-op rather
-     * than failing the webhook and triggering an endless retry loop.
-     */
+    // Apply a state transition, ignoring rejections (idempotent for redelivered/out-of-order webhooks).
     private function applyTransition(callable $transition): void
     {
         try {
@@ -278,11 +267,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
         }
     }
 
-    /**
-     * Whether the transaction is in a terminal state set by a merchant or bank
-     * action (refund, cancellation, chargeback) that a payment webhook must
-     * never override.
-     */
+    // True when a merchant/bank action (refund/cancel/chargeback) already finalized payment.
     private function isTransactionLocked(string $orderId, string $transactionId, Context $context): bool
     {
         $state = $this->orderService->getTransactionState($orderId, $transactionId, $context);

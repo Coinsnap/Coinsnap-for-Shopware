@@ -48,9 +48,7 @@ class BTCPayLightningPaymentMethodHandler extends AbstractPaymentMethodHandler
             ]
         );
 
-        // A 2xx without a checkout link would otherwise return null, which
-        // Shopware reads as "paid, no redirect" and sends the customer to the
-        // success page without paying. Fail loudly so the order stays recoverable.
+        // A null link reads as "paid, no redirect" in Shopware; fail instead.
         if (empty($response['checkoutLink'])) {
             $this->logger->error('BTCPay did not return a checkout link for order ' . $order->getOrderNumber());
             throw new \RuntimeException('The payment gateway did not return a checkout link.');
