@@ -49,7 +49,7 @@ class AbstractClient
                 [
                     'method' => \mb_strtoupper($method),
                     'uri' => $uri,
-                    'response' => $body,
+                    'response' => $this->redactBody($body),
                 ]
             );
             if ($body === '' || $body === null) {
@@ -83,7 +83,7 @@ class AbstractClient
                         'uri' => $uri,
                         'options' => $this->redactOptions($options),
                         'message' => $message,
-                        'body' => $body
+                        'body' => $this->redactBody($body)
                     ]
                 );
 
@@ -114,5 +114,31 @@ class AbstractClient
         }
 
         return $options;
+    }
+
+    /**
+     * Redacts credential fields (e.g. the webhook secret returned when a
+     * webhook is created) from a JSON response body before it is logged.
+     * Non-JSON bodies are returned unchanged.
+     */
+    private function redactBody(?string $body): ?string
+    {
+        if ($body === null || $body === '') {
+            return $body;
+        }
+
+        $decoded = json_decode($body, true);
+        if (!is_array($decoded)) {
+            return $body;
+        }
+
+        $sensitive = ['secret', 'apiKey', 'token'];
+        foreach ($decoded as $key => $value) {
+            if (in_array($key, $sensitive, true)) {
+                $decoded[$key] = '***redacted***';
+            }
+        }
+
+        return json_encode($decoded);
     }
 }

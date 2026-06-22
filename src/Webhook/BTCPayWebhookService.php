@@ -106,7 +106,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
         $signature = $request->headers->get(self::REQUIRED_HEADER);
 
         if (empty($signature)) {
-            $this->logger->error('Missing signature header');
+            $this->logger->warning('Missing signature header');
             return new Response(
               json_encode(['error' => 'Missing signature header']),
               Response::HTTP_UNAUTHORIZED,
@@ -120,7 +120,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
         $body = json_decode($rawBody, true);
 
         if (empty($body) || !is_array($body)) {
-            $this->logger->error('Missing webhook data');
+            $this->logger->warning('Missing webhook data');
             return new Response(
               json_encode(['error' => 'Missing webhook data']),
               Response::HTTP_UNAUTHORIZED,
@@ -140,7 +140,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
         $expectedHeader = 'sha256=' . hash_hmac('sha256', $rawBody, $this->configurationService->getSetting('btcpayWebhookSecret'));
 
         if (!hash_equals($expectedHeader, $signature)) {
-            $this->logger->error('Invalid signature');
+            $this->logger->warning('Invalid signature');
             return new Response(
               json_encode(['error' => 'Invalid signature']),
               Response::HTTP_UNAUTHORIZED,
@@ -148,7 +148,7 @@ class BTCPayWebhookService implements WebhookServiceInterface
             );
         }
         if (empty($body['invoiceId']) || empty($body['type'])) {
-            $this->logger->error('Missing invoiceId or type in webhook payload');
+            $this->logger->warning('Missing invoiceId or type in webhook payload');
             return new Response(
               json_encode(['error' => 'Missing invoiceId or type']),
               Response::HTTP_BAD_REQUEST,
