@@ -19,38 +19,41 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
 {
     public function sendReturnUrlToCheckout(PaymentTransactionStruct $transaction, Context $context): ?string
     {
-        try {
-            $orderTransaction = $this->loadOrderTransaction($transaction->getOrderTransactionId(), $context);
-            $order = $orderTransaction->getOrder();
-            $returnUrl = $transaction->getReturnUrl();
+        $orderTransaction = $this->loadOrderTransaction($transaction->getOrderTransactionId(), $context);
+        $order = $orderTransaction->getOrder();
+        $returnUrl = $transaction->getReturnUrl();
 
-            if ($orderTransaction->getAmount()->getTotalPrice() == 0) {
-                $this->transactionStateHandler->paid($orderTransaction->getId(), $context);
-                return $returnUrl;
-            }
-
-            $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices';
-            $response = $this->client->sendPostRequest(
-                $uri,
-                [
-                    'amount' => $orderTransaction->getAmount()->getTotalPrice(),
-                    'currency' => $order->getCurrency()->getIsoCode(),
-                    'referralCode' => 'DEV17612c35cd8c54d3fad381615',
-                    'metadata' =>
-                    [
-                        'orderNumber' => $order->getOrderNumber(),
-                        'orderId' => $orderTransaction->getOrderId(),
-                        'transactionId' => $orderTransaction->getId()
-                    ],
-                    'orderId' => $order->getOrderNumber(),
-                    'redirectUrl' => $returnUrl,
-                ]
-            );
-
-            return $response['checkoutLink'];
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
-            throw new \Exception($e->getMessage(), 0, $e);
+        if ($orderTransaction->getAmount()->getTotalPrice() === 0.0) {
+            $this->transactionStateHandler->paid($orderTransaction->getId(), $context);
+            return $returnUrl;
         }
+
+        $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices';
+        $response = $this->client->sendPostRequest(
+            $uri,
+            [
+                'amount' => $orderTransaction->getAmount()->getTotalPrice(),
+                'currency' => $order->getCurrency()->getIsoCode(),
+                'referralCode' => 'DEV17612c35cd8c54d3fad381615',
+                'metadata' =>
+                [
+                    'orderNumber' => $order->getOrderNumber(),
+                    'orderId' => $orderTransaction->getOrderId(),
+                    'transactionId' => $orderTransaction->getId()
+                ],
+                'orderId' => $order->getOrderNumber(),
+                'redirectUrl' => $returnUrl,
+            ]
+        );
+
+        // A 2xx without a checkout link would otherwise return null, which
+        // Shopware reads as "paid, no redirect" and sends the customer to the
+        // success page without paying. Fail loudly so the order stays recoverable.
+        if (empty($response['checkoutLink'])) {
+            $this->logger->error('Coinsnap did not return a checkout link for order ' . $order->getOrderNumber());
+            throw new \RuntimeException('The payment gateway did not return a checkout link.');
+        }
+
+        return $response['checkoutLink'];
     }
 }

@@ -118,7 +118,12 @@ class CoinsnapShopware extends Plugin
 
     public function activate(ActivateContext $context): void
     {
-
+        // Re-activate the plugin's payment methods so an activate after a
+        // deactivate restores them instead of leaving the merchant to re-enable
+        // each one manually.
+        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+            $this->setPaymentMethodIsActive(new $paymentMethod(), true, $context->getContext());
+        }
         parent::activate($context);
     }
 
@@ -157,19 +162,12 @@ class CoinsnapShopware extends Plugin
             }
         }
 
-        if (version_compare($currentVersion, '1.0.5', '<')) {
-            // 1.0.5 targets Shopware 6.7 and swaps the payment handler base
-            // class. Re-register the payment method so its handlerIdentifier is
-            // re-linked on existing installs. addPaymentMethod is idempotent.
-            $this->addPaymentMethod(new CoinsnapBitcoinLightningPaymentMethod(), $updateContext->getContext());
-        }
-
-        if (version_compare($currentVersion, '1.0.6', '<')) {
-            // 1.0.6 reintroduces BTCPay Server support alongside Coinsnap.
-            // Register the BTCPay payment methods on existing installs.
-            // addPaymentMethod is idempotent.
-            $this->addPaymentMethod(new BTCPayBitcoinPaymentMethod(), $updateContext->getContext());
-            $this->addPaymentMethod(new BTCPayLightningPaymentMethod(), $updateContext->getContext());
+        // Ensure every payment method this plugin ships is registered, so an
+        // upgrade from any prior version (Coinsnap-only, or pre-6.7 handler base
+        // class) reliably gains them. addPaymentMethod is idempotent, so this is
+        // safe to run on every update regardless of the reported version.
+        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+            $this->addPaymentMethod(new $paymentMethod(), $updateContext->getContext());
         }
 
         parent::update($updateContext);
@@ -238,8 +236,9 @@ class CoinsnapShopware extends Plugin
          */
         $paymentRepository = $this->container->get('payment_method.repository');
 
-        // Fetch ID for update
-        $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter('handlerIdentifier', $paymentMethod->getPaymentHandler()));
+        // Look up by technicalName, the column Shopware enforces as unique, so
+        // the idempotency check matches what the database actually constrains.
+        $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter('technicalName', $paymentMethod->getTechnicalName()));
         return $paymentRepository->searchIds($paymentCriteria, Context::createDefaultContext())->firstId();
     }
 

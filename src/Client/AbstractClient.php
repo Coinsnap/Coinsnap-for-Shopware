@@ -16,6 +16,7 @@ use GuzzleHttp\ClientInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 
 class AbstractClient
 {
@@ -92,6 +93,11 @@ class AbstractClient
 
             $this->logger->error('Guzzle request failed: Unknown error');
             throw new \Exception('Unknown error');
+        } catch (GuzzleException $e) {
+            // Connection-level failures (timeout, DNS, refused) are not
+            // RequestExceptions and carry no response, so handle them here.
+            $this->logger->error('Guzzle request failed: ' . $e->getMessage());
+            throw new \Exception($e->getMessage());
         }
     }
 
