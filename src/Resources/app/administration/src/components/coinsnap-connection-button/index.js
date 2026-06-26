@@ -12,6 +12,13 @@ import "./coinsnap-connection-button.scss";
 
 const CONFIG_DOMAIN = "CoinsnapShopware.config";
 
+// Read-only fields the server fills in after a successful connection.
+const STATUS_KEYS = [
+  "coinsnapIntegrationStatus",
+  "coinsnapWebhookId",
+  "coinsnapWebhookSecret",
+];
+
 Component.register("coinsnap-button", {
   template: template,
   inject: ["coinsnapApiService"],
@@ -32,6 +39,46 @@ Component.register("coinsnap-button", {
     clearInterval(this.credentialsPoll);
   },
   methods: {
+    // Walk up to the parent sw-system-config that owns the config form model.
+    findSystemConfigParent() {
+      let parent = this.$parent;
+      while (parent) {
+        if (parent.actualConfigData && typeof parent.actualConfigData === "object") {
+          return parent;
+        }
+        parent = parent.$parent;
+      }
+      return null;
+    },
+    // Push the server-side status values into the config form so the read-only
+    // switches reflect the connection result without a full page reload.
+    syncStatusToParent() {
+      const parent = this.findSystemConfigParent();
+      if (!parent) {
+        // Fall back to a reload if the form model can't be reached.
+        window.location.reload();
+        return Promise.resolve();
+      }
+      const salesChannelId = parent.currentSalesChannelId ?? null;
+      const systemConfig = ApiService.getByName("systemConfigApiService");
+      return systemConfig
+        .getValues(CONFIG_DOMAIN, salesChannelId)
+        .then((values) => {
+          const bucket = parent.actualConfigData?.[salesChannelId];
+          if (!bucket) {
+            return;
+          }
+          const updated = { ...bucket };
+          STATUS_KEYS.forEach((key) => {
+            const fullKey = `${CONFIG_DOMAIN}.${key}`;
+            if (fullKey in values) {
+              updated[fullKey] = values[fullKey];
+            }
+          });
+          parent.actualConfigData[salesChannelId] = updated;
+        })
+        .catch(() => {});
+    },
     // Toggle the Test button from saved credentials; returns the values.
     refreshCredentialsReady() {
       const systemConfig = ApiService.getByName("systemConfigApiService");
@@ -84,8 +131,10 @@ Component.register("coinsnap-button", {
                 title: "Coinsnap",
                 message: this.$t("coinsnap-coinsnap-test-connection.success"),
               });
-              // Refresh gating state instead of a hard reload (avoids losing unsaved input).
+              // Refresh gating state and the read-only status switches without a
+              // hard reload (avoids losing unsaved input).
               this.refreshCredentialsReady();
+              this.syncStatusToParent();
             })
             .catch(() => {
               this.isLoading = false;

@@ -28,6 +28,8 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
             return $returnUrl;
         }
 
+        $redirectUrl = $this->buildGatewayRedirectUrl($orderTransaction, $returnUrl, $context);
+
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices';
         $response = $this->client->sendPostRequest(
             $uri,
@@ -42,7 +44,7 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
                     'transactionId' => $orderTransaction->getId()
                 ],
                 'orderId' => $order->getOrderNumber(),
-                'redirectUrl' => $returnUrl,
+                'redirectUrl' => $redirectUrl,
             ]
         );
 

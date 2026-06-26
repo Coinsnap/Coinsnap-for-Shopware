@@ -98,5 +98,27 @@ abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
         return $orderTransaction;
     }
 
+    /**
+     * Persists Shopware's (long, tokenized) return URL on the transaction and
+     * hands the gateway a short proxy URL instead. Coinsnap caps redirectUrl at
+     * 255 chars, which the finalize URL with its payment-token JWT exceeds.
+     */
+    protected function buildGatewayRedirectUrl(OrderTransactionEntity $orderTransaction, string $returnUrl, Context $context): string
+    {
+        $parts = parse_url($returnUrl);
+        if (empty($parts['scheme']) || empty($parts['host'])) {
+            return $returnUrl;
+        }
+
+        $this->orderTransactionRepository->update([[
+            'id' => $orderTransaction->getId(),
+            'customFields' => ['coinsnapReturnUrl' => $returnUrl],
+        ]], $context);
+
+        $base = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
+
+        return $base . '/coinsnap/payment-return/' . $orderTransaction->getId();
+    }
+
     abstract public function sendReturnUrlToCheckout(PaymentTransactionStruct $transaction, Context $context): ?string;
 }

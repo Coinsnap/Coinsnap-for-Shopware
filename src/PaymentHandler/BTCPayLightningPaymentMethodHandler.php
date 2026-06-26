@@ -28,6 +28,8 @@ class BTCPayLightningPaymentMethodHandler extends AbstractPaymentMethodHandler
             return $returnUrl;
         }
 
+        $redirectUrl = $this->buildGatewayRedirectUrl($orderTransaction, $returnUrl, $context);
+
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('btcpayServerStoreId') . '/invoices';
         $response = $this->client->sendPostRequest(
             $uri,
@@ -41,7 +43,7 @@ class BTCPayLightningPaymentMethodHandler extends AbstractPaymentMethodHandler
                     'transactionId' => $orderTransaction->getId()
                 ],
                 'checkout' => [
-                    'redirectURL' => $returnUrl,
+                    'redirectURL' => $redirectUrl,
                     'redirectAutomatically' => true,
                     'paymentMethods' => ['BTC-LightningNetwork']
                 ]
