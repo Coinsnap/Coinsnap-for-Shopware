@@ -1,18 +1,15 @@
-# 1.0.6
-- Reintroduce BTCPay Server support alongside Coinsnap (both providers can be configured at once)
-- Add BTCPay Bitcoin and Lightning payment methods
-- Add a BTCPay configuration card with an API-key authorization and Test Connection flow
-- Route incoming webhooks to Coinsnap or BTCPay based on the signature header
-- Register the BTCPay payment methods on upgrade from earlier versions
-
-# 1.0.5
+# 1.1.0
 - Add compatibility with Shopware 6.7 (requires Shopware ~6.7.0)
 - Rewrite the payment handler to the new AbstractPaymentHandler API
-- Replace removed EntityRepositoryInterface with EntityRepository
-- Switch route attributes to the Symfony 7 Attribute\Route namespace
-- Re-link the payment method on upgrade from earlier versions
-- Verify webhook signatures against the raw request body using a timing-safe comparison
-- Harden the webhook against missing order metadata and unknown events
+- Reintroduce BTCPay Server support alongside Coinsnap (both providers can be configured at once)
+- Add BTCPay Bitcoin and Lightning payment methods
+- Add a BTCPay configuration card with API-key authorization and Test Connection flow
+- Route incoming webhooks to Coinsnap or BTCPay based on the signature header
+- Register the BTCPay payment methods on upgrade from earlier versions
+- Fix invoice creation failing when the gateway redirect URL exceeded 255 characters, by storing the Shopware return URL and handing the gateway a short proxy URL
+- Fix connection-page status switches not refreshing after a successful Test Connection
+- Verify webhook signatures against the raw request body using a timing-safe comparison, and harden webhook routing and replay handling
+- Replace removed EntityRepositoryInterface with EntityRepository and switch route attributes to the Symfony 7 Attribute\Route namespace
 - Clean up dead imports and tighten type declarations
 
 # 1.0.4
