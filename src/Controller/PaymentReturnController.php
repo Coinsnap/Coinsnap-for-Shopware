@@ -60,6 +60,12 @@ class PaymentReturnController extends AbstractController
             return new RedirectResponse($fallback);
         }
 
+        // Consume the stored URL so the finalize token can't be replayed via this route.
+        $this->orderTransactionRepository->update([[
+            'id' => $transaction->getId(),
+            'customFields' => ['coinsnapReturnUrl' => null],
+        ]], Context::createDefaultContext());
+
         return new RedirectResponse($returnUrl);
     }
 }
