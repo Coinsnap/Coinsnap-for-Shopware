@@ -34,7 +34,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
 use Coinsnap\Shopware\PaymentMethod\BTCPayBitcoinPaymentMethod;
 use Coinsnap\Shopware\PaymentMethod\BTCPayLightningPaymentMethod;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class CoinsnapShopware extends Plugin
 {
@@ -134,32 +133,6 @@ class CoinsnapShopware extends Plugin
     }
     public function update(UpdateContext $updateContext): void
     {
-        $currentVersion = $updateContext->getCurrentPluginVersion();
-
-        if (version_compare($currentVersion, '1.0.2', '=') && version_compare($currentVersion, '1.0.3', '<')) {
-
-            foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-                $this->setPaymentMethodIsActive(new $paymentMethod(), false, $updateContext->getContext());
-            }
-
-            $configService = $this->container->get(SystemConfigService::class);
-            $configKeysToDelete = [
-                'CoinsnapShopware.config.btcpayServerUrl',
-                'CoinsnapShopware.config.btcpayApiKey',
-                'CoinsnapShopware.config.btcpayServerStoreId',
-                'CoinsnapShopware.config.btcpayWebhookId',
-                'CoinsnapShopware.config.btcpayWebhookSecret',
-                'CoinsnapShopware.config.integrationStatus',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodBTC',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodLightning',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodMonero',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodLitecoin',
-            ];
-            foreach ($configKeysToDelete as $configKey) {
-                $configService->delete($configKey);
-            }
-        }
-
         // Idempotent: registers any shipped method missing on this install.
         foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
             $this->addPaymentMethod(new $paymentMethod(), $updateContext->getContext());
