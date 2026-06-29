@@ -112,19 +112,28 @@ class BTCPayConfigurationController extends ConfigurationController
      */
     private function checkEnabledPaymentMethodsBTCPayStore(Context $context): void
     {
-        $paymentMethods = ['BTC' => 'BTC', 'BTC-LightningNetwork' => 'Lightning'];
-        $paymentHandlers = ['BTC' => BTCPayBitcoinPaymentMethod::class, 'BTC-LightningNetwork' => BTCPayLightningPaymentMethod::class];
+        // BTCPay v2 ids are "BTC-CHAIN"/"BTC-LN"; v1 used "BTC"/"BTC-LightningNetwork". Accept both.
+        $onChainIds = ['BTC-CHAIN', 'BTC'];
+        $lightningIds = ['BTC-LN', 'BTC-LightningNetwork'];
+        $paymentHandlers = ['BTC' => BTCPayBitcoinPaymentMethod::class, 'Lightning' => BTCPayLightningPaymentMethod::class];
         $this->disableBTCPaymentMethodsBeforeTest($context, $paymentHandlers);
 
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('btcpayServerStoreId') . '/payment-methods';
         $response = $this->client->sendGetRequest($uri);
         foreach ($response as $method) {
             $key = $method['paymentMethodId'] ?? null;
-            if ($key !== null && array_key_exists($key, $paymentMethods)) {
-                $configName = 'btcpayStorePaymentMethod' . $paymentMethods[$key];
-                $this->configurationService->setSetting($configName, $method['enabled']);
-                $this->updatePaymentMethodStatus($context, $paymentHandlers[$key], $method['enabled'], $this->paymentRepository);
+            if ($key === null) {
+                continue;
             }
+            if (in_array($key, $onChainIds, true)) {
+                $label = 'BTC';
+            } elseif (in_array($key, $lightningIds, true)) {
+                $label = 'Lightning';
+            } else {
+                continue;
+            }
+            $this->configurationService->setSetting('btcpayStorePaymentMethod' . $label, $method['enabled']);
+            $this->updatePaymentMethodStatus($context, $paymentHandlers[$label], $method['enabled'], $this->paymentRepository);
         }
     }
 

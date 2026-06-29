@@ -11,13 +11,8 @@ import template from "./coinsnap-connection-button.html.twig";
 import "./coinsnap-connection-button.scss";
 
 const CONFIG_DOMAIN = "CoinsnapShopware.config";
-
-// Read-only fields the server fills in after a successful connection.
-const STATUS_KEYS = [
-  "coinsnapIntegrationStatus",
-  "coinsnapWebhookId",
-  "coinsnapWebhookSecret",
-];
+// sessionStorage flag: show the success toast once after the post-connect reload.
+const CONNECT_SUCCESS_FLAG = "coinsnapConnectSuccess";
 
 Component.register("coinsnap-button", {
   template: template,
@@ -31,6 +26,7 @@ Component.register("coinsnap-button", {
     };
   },
   mounted() {
+    this.showSuccessAfterReload();
     this.refreshCredentialsReady();
     // Saving config doesn't remount, so poll to keep the button state in sync.
     this.credentialsPoll = setInterval(() => this.refreshCredentialsReady(), 2000);
@@ -39,45 +35,38 @@ Component.register("coinsnap-button", {
     clearInterval(this.credentialsPoll);
   },
   methods: {
-    // Walk up to the parent sw-system-config that owns the config form model.
-    findSystemConfigParent() {
-      let parent = this.$parent;
-      while (parent) {
-        if (parent.actualConfigData && typeof parent.actualConfigData === "object") {
-          return parent;
-        }
-        parent = parent.$parent;
+    // Reload after a successful connection so the read-only "Connected" checkbox
+    // reflects the saved server state; the in-place form model isn't reliably
+    // reactive for disabled fields. Credentials are already saved at this point,
+    // so nothing editable is lost.
+    finishWithReload() {
+      try {
+        sessionStorage.setItem(CONNECT_SUCCESS_FLAG, "1");
+      } catch (e) {
+        /* sessionStorage unavailable, reload anyway */
       }
-      return null;
+      window.location.reload();
     },
-    // Push the server-side status values into the config form so the read-only
-    // switches reflect the connection result without a full page reload.
-    syncStatusToParent() {
-      const parent = this.findSystemConfigParent();
-      if (!parent) {
-        // Fall back to a reload if the form model can't be reached.
-        window.location.reload();
-        return Promise.resolve();
+    // Show the success notification once, after the post-connect reload.
+    showSuccessAfterReload() {
+      let flagged = false;
+      try {
+        flagged = sessionStorage.getItem(CONNECT_SUCCESS_FLAG) === "1";
+      } catch (e) {
+        flagged = false;
       }
-      const salesChannelId = parent.currentSalesChannelId ?? null;
-      const systemConfig = ApiService.getByName("systemConfigApiService");
-      return systemConfig
-        .getValues(CONFIG_DOMAIN, salesChannelId)
-        .then((values) => {
-          const bucket = parent.actualConfigData?.[salesChannelId];
-          if (!bucket) {
-            return;
-          }
-          const updated = { ...bucket };
-          STATUS_KEYS.forEach((key) => {
-            const fullKey = `${CONFIG_DOMAIN}.${key}`;
-            if (fullKey in values) {
-              updated[fullKey] = values[fullKey];
-            }
-          });
-          parent.actualConfigData[salesChannelId] = updated;
-        })
-        .catch(() => {});
+      if (!flagged) {
+        return;
+      }
+      try {
+        sessionStorage.removeItem(CONNECT_SUCCESS_FLAG);
+      } catch (e) {
+        /* ignore */
+      }
+      this.createNotificationSuccess({
+        title: "Coinsnap",
+        message: this.$t("coinsnap-coinsnap-test-connection.success"),
+      });
     },
     // Toggle the Test button from saved credentials; returns the values.
     refreshCredentialsReady() {
@@ -127,14 +116,9 @@ Component.register("coinsnap-button", {
                   message: ApiResponse.message,
                 });
               }
-              this.createNotificationSuccess({
-                title: "Coinsnap",
-                message: this.$t("coinsnap-coinsnap-test-connection.success"),
-              });
-              // Refresh gating state and the read-only status switches without a
-              // hard reload (avoids losing unsaved input).
-              this.refreshCredentialsReady();
-              this.syncStatusToParent();
+              // Reload so the read-only "Connected" checkbox reflects the saved
+              // server state; the success toast is shown after the reload.
+              this.finishWithReload();
             })
             .catch(() => {
               this.isLoading = false;
