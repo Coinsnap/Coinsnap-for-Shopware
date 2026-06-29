@@ -3,11 +3,11 @@
   "entryPoints": {
     "coinsnap-shopware": {
       "css": [
-        "/bundles/coinsnapshopware/administration/assets/coinsnap-shopware-C9Z4eVMM.css"
+        "/bundles/coinsnapshopware/administration/assets/coinsnap-shopware-CzyyE1jZ.css"
       ],
       "dynamic": [],
       "js": [
-        "/bundles/coinsnapshopware/administration/assets/coinsnap-shopware-Br0SvhsV.js"
+        "/bundles/coinsnapshopware/administration/assets/coinsnap-shopware-Cvjg4IUk.js"
       ],
       "legacy": false,
       "preload": []

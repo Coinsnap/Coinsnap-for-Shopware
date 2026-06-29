@@ -41,6 +41,8 @@
         <input-field>
             <name>btcpayServerUrl</name>
             <label>BTCPay Server URL</label>
+            <helpText>Enter your BTCPay Server URL and click Save. Then use "1. Connect to BTCPay Server" to authorize the plugin, and "2. Test connection" to confirm.</helpText>
+            <helpText lang="de-DE">Geben Sie Ihre BTCPay Server URL ein und klicken Sie auf Speichern. Nutzen Sie dann "1. Mit BTCPay Server verbinden", um das Plugin zu autorisieren, und "2. Verbindung testen", um zu bestätigen.</helpText>
         </input-field>
         <input-field type="password">
             <name>btcpayApiKey</name>

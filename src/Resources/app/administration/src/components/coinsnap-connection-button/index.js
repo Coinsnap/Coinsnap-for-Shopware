@@ -29,10 +29,16 @@ Component.register("coinsnap-button", {
     this.showSuccessAfterReload();
     this.refreshCredentialsReady();
     // Saving config doesn't remount, so poll to keep the button state in sync.
-    this.credentialsPoll = setInterval(() => this.refreshCredentialsReady(), 2000);
+    this.credentialsPoll = setInterval(() => this.refreshCredentialsReady(), 750);
+    // Refresh on return to the tab/window so the button state stays current.
+    this.refreshOnFocus = () => this.refreshCredentialsReady();
+    window.addEventListener("focus", this.refreshOnFocus);
+    document.addEventListener("visibilitychange", this.refreshOnFocus);
   },
   beforeUnmount() {
     clearInterval(this.credentialsPoll);
+    window.removeEventListener("focus", this.refreshOnFocus);
+    document.removeEventListener("visibilitychange", this.refreshOnFocus);
   },
   methods: {
     // Reload after a successful connection so the read-only "Connected" checkbox

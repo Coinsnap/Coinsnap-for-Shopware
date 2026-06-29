@@ -1,5 +1,73 @@
+// Coinsnap brand-green action button with explicit interaction states so the
+// connection buttons give clear feedback and read as disabled when gated.
+$coinsnap-green: #51b13e;
+$coinsnap-green-hover: #48a036;
+$coinsnap-green-active: #3f8f30;
+// Dark ink label so text on the brand green passes WCAG AA (~5.6:1).
+$coinsnap-ink: #0e2b0a;
+// Darker green for label-on-white so the secondary button passes WCAG AA.
+$coinsnap-green-text: #2e7d27;
+
 .sw-button-coinsnap {
-  color: #fff;
-  background-color: #51b13e;
-  border-color: #51b13e;
+  color: $coinsnap-ink;
+  background-color: $coinsnap-green;
+  border-color: $coinsnap-green;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    color: $coinsnap-ink;
+    background-color: $coinsnap-green-hover;
+    border-color: $coinsnap-green-hover;
+  }
+
+  &:active {
+    background-color: $coinsnap-green-active;
+    border-color: $coinsnap-green-active;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba($coinsnap-green, 0.5);
+  }
+
+  &:disabled,
+  &.sw-button--disabled {
+    color: $coinsnap-ink;
+    background-color: $coinsnap-green;
+    border-color: $coinsnap-green;
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// Secondary "Test connection": outline until the primary connect step is done.
+.sw-button-coinsnap--ghost {
+  color: $coinsnap-green-text;
+  background-color: transparent;
+  border-color: $coinsnap-green;
+
+  &:hover,
+  &:active {
+    color: $coinsnap-ink;
+    background-color: $coinsnap-green;
+    border-color: $coinsnap-green;
+  }
+
+  &:active {
+    background-color: $coinsnap-green-active;
+    border-color: $coinsnap-green-active;
+  }
+
+  &:disabled,
+  &.sw-button--disabled {
+    color: $coinsnap-green-text;
+    background-color: transparent;
+    border-color: $coinsnap-green;
+    opacity: 0.45;
+  }
 }
