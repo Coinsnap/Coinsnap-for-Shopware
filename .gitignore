@@ -110,4 +110,7 @@ tests/phpunit-full-coverage.xml
 .devenv*
 devenv.local.nix
 
+# impeccable skill (local tooling)
+/.claude/skills/impeccable/
+
 

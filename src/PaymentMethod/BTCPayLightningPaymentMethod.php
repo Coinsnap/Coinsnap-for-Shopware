@@ -12,45 +12,45 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\PaymentMethod;
 
-use Coinsnap\Shopware\PaymentHandler\CoinsnapBitcoinLightningPaymentMethodHandler;
+use Coinsnap\Shopware\PaymentHandler\BTCPayLightningPaymentMethodHandler;
 
-class CoinsnapBitcoinLightningPaymentMethod
+class BTCPayLightningPaymentMethod
 {
     public function getName(): string
     {
-        return 'Coinsnap-Bitcoin+Lightning';
+        return 'Lightning';
     }
 
     public function getTechnicalName(): string
     {
-        return 'coinsnap_bitcoin_lightning';
+        return 'btcpay_lightning';
     }
 
     public function getPosition(): int
     {
-        return -2;
+        return -1;
     }
 
     public function getTranslations(): array
     {
         return [
             'de-DE' => [
-                'description' => 'Zahle mit Bitcoin/Lightning - Coinsnap',
-                'name' => 'Coinsnap-Bitcoin-Lightning',
+                'description' => 'Zahle mit Lightning - BTCPay Server',
+                'name' => 'Lightning - BTCPay Server',
             ],
             'en-GB' => [
-                'description' => 'Pay with Bitcoin/Lightning - Coinsnap',
-                'name' => 'Coinsnap-Bitcoin-Lightning',
+                'description' => 'Pay with Lightning - BTCPay Server',
+                'name' => 'Lightning - BTCPay Server',
             ],
             '2fbb5fe2e29a4d70aa5854ce7ce3e20b' => [
-                'description' => 'Pay with Bitcoin/Lightning - Coinsnap',
-                'name' => 'Coinsnap-Bitcoin-Lightning',
+                'description' => 'Pay with Lightning - BTCPay Server',
+                'name' => 'Lightning - BTCPay Server',
             ], //Fallback language
         ];
     }
 
     public function getPaymentHandler(): string
     {
-        return CoinsnapBitcoinLightningPaymentMethodHandler::class;
+        return BTCPayLightningPaymentMethodHandler::class;
     }
 }

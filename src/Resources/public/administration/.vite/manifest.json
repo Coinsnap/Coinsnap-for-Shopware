@@ -1,0 +1,11 @@
+{
+  "main.js": {
+    "file": "assets/coinsnap-shopware-Cvjg4IUk.js",
+    "name": "coinsnap-shopware",
+    "src": "main.js",
+    "isEntry": true,
+    "css": [
+      "assets/coinsnap-shopware-CzyyE1jZ.css"
+    ]
+  }
+}

@@ -5,6 +5,8 @@ $coinsnap-green-hover: #48a036;
 $coinsnap-green-active: #3f8f30;
 // Dark ink label so text on the brand green passes WCAG AA (~5.6:1).
 $coinsnap-ink: #0e2b0a;
+// Darker green for label-on-white so the secondary button passes WCAG AA.
+$coinsnap-green-text: #2e7d27;
 
 .sw-button-coinsnap {
   color: $coinsnap-ink;
@@ -40,5 +42,32 @@ $coinsnap-ink: #0e2b0a;
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
+  }
+}
+
+// Secondary "Test connection": outline until the primary connect step is done.
+.sw-button-coinsnap--ghost {
+  color: $coinsnap-green-text;
+  background-color: transparent;
+  border-color: $coinsnap-green;
+
+  &:hover,
+  &:active {
+    color: $coinsnap-ink;
+    background-color: $coinsnap-green;
+    border-color: $coinsnap-green;
+  }
+
+  &:active {
+    background-color: $coinsnap-green-active;
+    border-color: $coinsnap-green-active;
+  }
+
+  &:disabled,
+  &.sw-button--disabled {
+    color: $coinsnap-green-text;
+    background-color: transparent;
+    border-color: $coinsnap-green;
+    opacity: 0.45;
   }
 }

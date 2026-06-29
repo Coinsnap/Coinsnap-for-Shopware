@@ -1,7 +1,7 @@
 {
   "name": "coinsnap/coinsnap_shopware",
-  "description": "Accept Bitcoin and Lightning payment in Shopware with Coinsnap and BTCPay server.",
-  "version": "1.0.4",
+  "description": "Accept Bitcoin and Lightning payment in Shopware with Coinsnap or BTCPay Server.",
+  "version": "1.1.0",
   "type": "shopware-platform-plugin",
   "license": "MIT",
   "authors": [
@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "shopware/core": "^6.4"
+    "shopware/core": "^6.7.0"
   },
   "extra": {
     "shopware-plugin-class": "Coinsnap\\Shopware\\CoinsnapShopware",
@@ -19,8 +19,8 @@
       "en-GB": "Coinsnap for Shopware"
     },
     "description": {
-      "de-DE": "Akzeptiere Bitcoin und Lightning Zahlung in Shopware mit dem Coinsnap und BTCPay Server.",
-      "en-GB": "Accept Bitcoin and Lightning payment in Shopware with Coinsnap and BTCPay server."
+      "de-DE": "Akzeptiere Bitcoin und Lightning Zahlung in Shopware mit Coinsnap oder BTCPay Server.",
+      "en-GB": "Accept Bitcoin and Lightning payment in Shopware with Coinsnap or BTCPay Server."
     },
     "supportLink": {
       "en-GB": "https://coinsnap.io/en/coinsnap-support-request",

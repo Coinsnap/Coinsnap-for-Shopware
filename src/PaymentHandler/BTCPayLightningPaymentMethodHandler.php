@@ -15,7 +15,7 @@ namespace Coinsnap\Shopware\PaymentHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
 use Shopware\Core\Framework\Context;
 
-class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethodHandler
+class BTCPayLightningPaymentMethodHandler extends AbstractPaymentMethodHandler
 {
     public function sendReturnUrlToCheckout(PaymentTransactionStruct $transaction, Context $context): ?string
     {
@@ -30,27 +30,29 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
 
         $redirectUrl = $this->buildGatewayRedirectUrl($orderTransaction, $returnUrl, $context);
 
-        $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices';
+        $uri = '/api/v1/stores/' . $this->configurationService->getSetting('btcpayServerStoreId') . '/invoices';
         $response = $this->client->sendPostRequest(
             $uri,
             [
                 'amount' => $orderTransaction->getAmount()->getTotalPrice(),
                 'currency' => $order->getCurrency()->getIsoCode(),
-                'referralCode' => 'DEV17612c35cd8c54d3fad381615',
                 'metadata' =>
                 [
                     'orderNumber' => $order->getOrderNumber(),
                     'orderId' => $orderTransaction->getOrderId(),
                     'transactionId' => $orderTransaction->getId()
                 ],
-                'orderId' => $order->getOrderNumber(),
-                'redirectUrl' => $redirectUrl,
+                'checkout' => [
+                    'redirectURL' => $redirectUrl,
+                    'redirectAutomatically' => true,
+                    'paymentMethods' => ['BTC-LightningNetwork']
+                ]
             ]
         );
 
         // A null link reads as "paid, no redirect" in Shopware; fail instead.
         if (empty($response['checkoutLink'])) {
-            $this->logger->error('Coinsnap did not return a checkout link for order ' . $order->getOrderNumber());
+            $this->logger->error('BTCPay did not return a checkout link for order ' . $order->getOrderNumber());
             throw new \RuntimeException('The payment gateway did not return a checkout link.');
         }
 

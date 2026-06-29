@@ -30,11 +30,21 @@ class OrderService
         $this->orderRepository = $orderRepository;
     }
 
-    public function getId(string $orderNumber, Context $context): string
+    public function getId(string $orderNumber, Context $context): ?string
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
-        $orderId = $this->orderRepository->searchIds($criteria, $context)->firstId();
-        return $orderId;
+        return $this->orderRepository->searchIds($criteria, $context)->firstId();
+    }
+
+    // Technical name of the transaction's current state, or null.
+    public function getTransactionState(string $orderId, string $transactionId, Context $context): ?string
+    {
+        $criteria = new Criteria([$orderId]);
+        $criteria->addAssociation('transactions.stateMachineState');
+        $order = $this->orderRepository->search($criteria, $context)->first();
+        $transaction = $order?->getTransactions()?->get($transactionId);
+
+        return $transaction?->getStateMachineState()?->getTechnicalName();
     }
 }

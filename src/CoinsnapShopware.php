@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Coinsnap\Shopware;
 
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
@@ -32,7 +32,8 @@ use Shopware\Core\Content\Media\File\FileSaver;
 use Coinsnap\Shopware\PaymentMethod\PaymentMethods;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Coinsnap\Shopware\PaymentMethod\BTCPayBitcoinPaymentMethod;
+use Coinsnap\Shopware\PaymentMethod\BTCPayLightningPaymentMethod;
 
 class CoinsnapShopware extends Plugin
 {
@@ -89,6 +90,8 @@ class CoinsnapShopware extends Plugin
             );
         }
         $this->addPaymentMethod(new CoinsnapBitcoinLightningPaymentMethod(), $context->getContext());
+        $this->addPaymentMethod(new BTCPayBitcoinPaymentMethod(), $context->getContext());
+        $this->addPaymentMethod(new BTCPayLightningPaymentMethod(), $context->getContext());
     }
 
     public function uninstall(UninstallContext $context): void
@@ -114,7 +117,10 @@ class CoinsnapShopware extends Plugin
 
     public function activate(ActivateContext $context): void
     {
-
+        // Restore the payment methods, symmetric with deactivate().
+        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+            $this->setPaymentMethodIsActive(new $paymentMethod(), true, $context->getContext());
+        }
         parent::activate($context);
     }
 
@@ -127,30 +133,9 @@ class CoinsnapShopware extends Plugin
     }
     public function update(UpdateContext $updateContext): void
     {
-        $currentVersion = $updateContext->getCurrentPluginVersion();
-
-        if (version_compare($currentVersion, '1.0.2', '=') && version_compare($currentVersion, '1.0.3', '<')) {
-
-            foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
-                $this->setPaymentMethodIsActive(new $paymentMethod(), false, $updateContext->getContext());
-            }
-
-            $configService = $this->container->get(SystemConfigService::class);
-            $configKeysToDelete = [
-                'CoinsnapShopware.config.btcpayServerUrl',
-                'CoinsnapShopware.config.btcpayApiKey',
-                'CoinsnapShopware.config.btcpayServerStoreId',
-                'CoinsnapShopware.config.btcpayWebhookId',
-                'CoinsnapShopware.config.btcpayWebhookSecret',
-                'CoinsnapShopware.config.integrationStatus',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodBTC',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodLightning',
-                'CoinsnapShopware.config.btcpayStorePaymentMethodMonero',
-                'CoinsnapShopware.configbtcpayStorePaymentMethodLitecoin',
-            ];
-            foreach ($configKeysToDelete as $configKey) {
-                $configService->delete($configKey);
-            }
+        // Idempotent: registers any shipped method missing on this install.
+        foreach (PaymentMethods::PAYMENT_METHODS as $paymentMethod) {
+            $this->addPaymentMethod(new $paymentMethod(), $updateContext->getContext());
         }
 
         parent::update($updateContext);
@@ -173,6 +158,7 @@ class CoinsnapShopware extends Plugin
 
         $examplePaymentData = [
             'handlerIdentifier' => $paymentMethod->getPaymentHandler(),
+            'technicalName' => $paymentMethod->getTechnicalName(),
             'pluginId' => $pluginId,
             'position' => $paymentMethod->getPosition(),
             'media' => [
@@ -183,7 +169,7 @@ class CoinsnapShopware extends Plugin
         ];
 
         /**
-         * @var EntityRepositoryInterface $paymentRepository
+         * @var EntityRepository $paymentRepository
          */
         $paymentRepository = $this->container->get('payment_method.repository');
         $paymentRepository->create([$examplePaymentData], $context);
@@ -192,7 +178,7 @@ class CoinsnapShopware extends Plugin
     private function setPaymentMethodIsActive($paymentMethod, bool $active, Context $context): void
     {
         /**
-         * @var EntityRepositoryInterface $paymentRepository
+         * @var EntityRepository $paymentRepository
          */
         $paymentRepository = $this->container->get('payment_method.repository');
 
@@ -214,12 +200,12 @@ class CoinsnapShopware extends Plugin
     private function getPaymentMethodId($paymentMethod): ?string
     {
         /**
-         * @var EntityRepositoryInterface $paymentRepository
+         * @var EntityRepository $paymentRepository
          */
         $paymentRepository = $this->container->get('payment_method.repository');
 
-        // Fetch ID for update
-        $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter('handlerIdentifier', $paymentMethod->getPaymentHandler()));
+        // Match the unique technicalName column.
+        $paymentCriteria = (new Criteria())->addFilter(new EqualsFilter('technicalName', $paymentMethod->getTechnicalName()));
         return $paymentRepository->searchIds($paymentCriteria, Context::createDefaultContext())->firstId();
     }
 
@@ -234,14 +220,16 @@ class CoinsnapShopware extends Plugin
     private function ensureMedia(Context $context, string $logoName): string
     {
         $filePath = realpath(__DIR__ . '/Resources/icons/' . strtolower($logoName) . '.svg');
-        $fileName = hash_file('md5', $filePath);
-        $media = $this->getMediaEntity($fileName, $context);
-        $mediaRepository = $this->container->get('media.repository');
+        $savedFileName = \sprintf("coinsnap_%s", strtolower($logoName));
 
+        // Look up by the name the file is actually stored under, so re-installs
+        // and upgrades don't try to persist a media file that already exists.
+        $media = $this->getMediaEntity($savedFileName, $context);
         if ($media) {
             return $media->getId();
         }
 
+        $mediaRepository = $this->container->get('media.repository');
         $mediaFile = new MediaFile(
             $filePath,
             mime_content_type($filePath),
@@ -258,7 +246,6 @@ class CoinsnapShopware extends Plugin
             $context
         );
         $fileSaver = $this->container->get(FileSaver::class);
-        $savedFileName = \sprintf("coinsnap_%s", strtolower($logoName));
         $fileSaver->persistFileToMedia(
             $mediaFile,
             $savedFileName,

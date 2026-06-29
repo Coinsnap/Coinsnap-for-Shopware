@@ -13,10 +13,14 @@ declare(strict_types=1);
 namespace Coinsnap\Shopware\PaymentMethod;
 
 use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
+use Coinsnap\Shopware\PaymentMethod\BTCPayBitcoinPaymentMethod;
+use Coinsnap\Shopware\PaymentMethod\BTCPayLightningPaymentMethod;
 
 class PaymentMethods
 {
     public const PAYMENT_METHODS = [
         CoinsnapBitcoinLightningPaymentMethod::class,
+        BTCPayBitcoinPaymentMethod::class,
+        BTCPayLightningPaymentMethod::class,
     ];
 }

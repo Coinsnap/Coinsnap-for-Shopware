@@ -11,7 +11,7 @@ If you run a Shopware-based online store, integrating Bitcoin and Lightning paym
 
 Simply install the Coinsnap Shopware plugin on Shopware version 6 or higher, link it to your Coinsnap account, and your customers will have the option to pay with Bitcoin and Lightning.
 
-All incoming Bitcoin payments are immediately forwarded and added to your Lightning Wallet. The Coinsnap Shopware plugin, developed by Coincharge, is compatible with both BTCPay Server and Coinsnap for connectivity.
+All incoming Bitcoin payments are immediately forwarded and added to your Lightning Wallet. The Coinsnap Shopware plugin, developed by Coincharge, connects to Coinsnap.
 
 == Support ==
 
@@ -27,7 +27,7 @@ Here at the Github page you will find all the payment modules provided by Coinsn
 
 ### Connect Coinsnap account with Shopware plugin ###
 
-As soon as a Coinsnap account has been set up, we can start connecting Shopware to Coinsnap. The BTCPayShopware extension is available in the “My extensions” area.
+As soon as a Coinsnap account has been set up, we can start connecting Shopware to Coinsnap. The Coinsnap for Shopware extension is available in the “My extensions” area.
 
 #### (1) Determination of the configuration process ####
 Click on the three dots on the right-hand side to start the configuration process.

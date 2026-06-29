@@ -18,22 +18,24 @@ use Psr\Log\LoggerInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
 use Coinsnap\Shopware\Webhook\WebhookServiceInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-
+use Coinsnap\Shopware\Order\OrderService;
 use Coinsnap\Shopware\Webhook\CoinsnapWebhookService;
 use Coinsnap\Shopware\Webhook\BTCPayWebhookService;
 
 class WebhookFactory
 {
   private ClientInterface $coinsnapClient;
+  private ClientInterface $btcpayClient;
   private ConfigurationService $configurationService;
   private OrderTransactionStateHandler $transactionStateHandler;
-  private $orderService;
+  private OrderService $orderService;
   private EntityRepository $orderRepository;
   private LoggerInterface $logger;
 
-  public function __construct(ClientInterface $coinsnapClient, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
+  public function __construct(ClientInterface $coinsnapClient, ClientInterface $btcpayClient, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, OrderService $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
   {
     $this->coinsnapClient = $coinsnapClient;
+    $this->btcpayClient = $btcpayClient;
     $this->configurationService = $configurationService;
     $this->transactionStateHandler = $transactionStateHandler;
     $this->orderService = $orderService;
@@ -45,6 +47,9 @@ class WebhookFactory
   {
     if ($provider === 'coinsnap') {
       return new CoinsnapWebhookService($this->coinsnapClient, $this->configurationService, $this->transactionStateHandler, $this->orderService, $this->orderRepository, $this->logger);
+    }
+    if ($provider === 'btcpay') {
+      return new BTCPayWebhookService($this->btcpayClient, $this->configurationService, $this->transactionStateHandler, $this->orderService, $this->orderRepository, $this->logger);
     }
     throw new \RuntimeException('Unsupported webhook provider.');
   }

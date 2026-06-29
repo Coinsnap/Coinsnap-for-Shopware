@@ -1,14 +1,52 @@
+// Read-only "Connected" status indicators (Coinsnap + BTCPay). Draw the glyph in
+// CSS instead of Shopware's default checkmark, which could render broken-looking.
+.sw-field--checkbox
+  .sw-field__checkbox
+  input[type="checkbox"]:disabled
+  ~ .sw-field__checkbox-state {
+  position: relative;
+  background: #e8e8e8;
+  border-color: #c9c9c9;
+
+  .sw-field__checkbox-state-icon,
+  .sw-icon,
+  svg {
+    display: none;
+  }
+
+  // Not connected: neutral grey cross.
+  &::after {
+    content: "\2715";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+    color: #8a8a8a;
+  }
+}
+
 .sw-field--checkbox
   .sw-field__checkbox
   input[type="checkbox"]:checked:disabled
   ~ .sw-field__checkbox-state {
-  background: #189eff;
-  border-color: #189eff;
+  background: #51b13e;
+  border-color: #51b13e;
+
+  // Connected: green check.
+  &::after {
+    content: "\2713";
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
 }
 
 .sw-field--switch
   .sw-field--switch__input
   input[type="checkbox"]:checked:disabled
   ~ .sw-field__switch-state {
-  background: #189eff;
+  background: #51b13e;
 }
