@@ -1,3 +1,6 @@
+# 1.1.1
+- Fix plugin update failing on Shopware 6.7 with "SVG files with active content are not allowed" by cleaning the payment icons to Shopware's passive-SVG allowlist (remove DOCTYPE declarations, editor metadata and namespaces, and unused filter data). Icon rendering is unchanged.
+
 # 1.1.0
 - Add compatibility with Shopware 6.7 (requires Shopware ~6.7.0)
 - Rewrite the payment handler to the new AbstractPaymentHandler API
