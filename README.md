@@ -1,78 +1,143 @@
-# Coinsnap for Shopware Payment Plugin #
-![Image of shopwarebtcpay](https://coinsnap.io/wp-content/uploads/2023/11/Coinsnap-for-Shopware.png)
-## Accept Bitcoin and Lightning payment in Shopware with Coinsnap ##
+# Coinsnap for Shopware
 
-Coinsnap is a Lightning Payment Provider and offers Bitcoin and Lightning payment processing for retail stores and online stores.
-As a merchant, you only need a Lightning wallet with a Lightning address to receive Bitcoin and Lightning payments from your customers.
+![Coinsnap for Shopware](https://coinsnap.io/wp-content/uploads/2023/11/Coinsnap-for-Shopware.png)
 
-== Description ==
+**Bitcoin payment module for Shopware — accept Bitcoin and Lightning with Coinsnap or your own BTCPay Server.**
 
-If you run a Shopware-based online store, integrating Bitcoin and Lightning payment options is easy with the Coinsnap Shopware plugin.
+Coinsnap for Shopware is an open-source Bitcoin payment module that adds Bitcoin payments directly to the Shopware checkout and order flow.
 
-Simply install the Coinsnap Shopware plugin on Shopware version 6 or higher, link it to your Coinsnap account, and your customers will have the option to pay with Bitcoin and Lightning.
+Customers can pay with **Bitcoin via Lightning or on-chain**, while merchants keep their existing Shopware products, taxes, shipping rules, coupons and order workflow.
 
-All incoming Bitcoin payments are immediately forwarded and added to your Lightning Wallet. The Coinsnap Shopware plugin, developed by Coincharge, connects to Coinsnap.
+When using Coinsnap, merchants do not need to operate their own Bitcoin or Lightning payment infrastructure. Coinsnap follows a **non-custodial / self-custody model** and does not hold merchant funds. Payments can be settled to the merchant's configured Bitcoin or Lightning wallet or, through supported off-ramp partners, to a bank account.
 
-== Support ==
+Coinsnap is **Bitcoin payment software for merchants** and a brand of **Onlineshop24 d.o.o., Serbia**.
 
-- Installation instructions in English and German: https://coinsnap.io/en/coinsnap-for-shopware-payment-plugin/
-- Demo Store: https://shopware.coincharge.io/en/
-- Telegram Support: https://t.me/coinsnap_io
+## Key features
 
-## Installation of the Shopware plugin via Github ##
+- Accept **Bitcoin and Lightning payments** in Shopware
+- Support for **Lightning and Bitcoin on-chain**
+- Native integration into the Shopware checkout and order workflow
+- Automatic Shopware order updates after payment
+- No own Lightning node or Bitcoin payment server required when using Coinsnap
+- **Non-custodial / self-custody** payment model
+- Settlement to a configured Bitcoin or Lightning wallet
+- Optional fiat settlement through supported off-ramp partners
+- Support for **BTCPay Server** for merchants who prefer a self-hosted Bitcoin payment infrastructure
+- Separate BTCPay Bitcoin and Lightning payment methods
+- Secure webhook handling for Coinsnap and BTCPay Server
+- Open source under the MIT License
 
-Here at the Github page you will find all the payment modules provided by Coinsnap. On Coinsnap for Shopware you will find the green button labeled Code and if you click on it, the menu opens and Download ZIP appears. Here you can download the latest version of the Coinsnap plugin to your computer.
+## Requirements
 
-![](https://coinsnap.io/wp-content/uploads/2023/11/github-coinsnap.jpg)
+The current plugin release is **1.1.1** and requires:
 
-### Connect Coinsnap account with Shopware plugin ###
+- **Shopware 6.7**
+- A **Coinsnap merchant account**, or
+- Your own **BTCPay Server**
 
-As soon as a Coinsnap account has been set up, we can start connecting Shopware to Coinsnap. The Coinsnap for Shopware extension is available in the “My extensions” area.
+For Coinsnap settlement, use a compatible Bitcoin or Lightning wallet. One option is the [Coinsnap Wallet](https://coinsnap.io/wallet/), which combines self-custodial wallet functionality with merchant and point-of-sale features.
 
-#### (1) Determination of the configuration process ####
-Click on the three dots on the right-hand side to start the configuration process.
+## How it works
 
-#### (2) Initialization of the configuration ####
-Click on Configure to start the configuration process.
+1. Create a [Coinsnap merchant account](https://app.coinsnap.io/register).
+2. Install and activate the Coinsnap for Shopware extension.
+3. Connect Shopware to Coinsnap using your Store ID and API key.
+4. Enable the Bitcoin payment method in the relevant Shopware sales channel.
+5. Customers select Bitcoin at checkout and pay via Lightning or Bitcoin on-chain.
+6. Coinsnap detects the payment and updates the Shopware order automatically.
 
-![](https://coinsnap.io/wp-content/uploads/2023/09/Photo2-12.35.49.png)
+## Coinsnap or BTCPay Server
 
-The Coinsnap API Key and the Coinsnap Store ID must be stored in the configuration area.
+The module supports two payment-provider modes:
 
-Go to the Settings menu item in the Coinsnap backend. There you will find the Coinsnap Store ID and the Coinsnap API Key in the Store Settings section.
+- **Coinsnap** — for merchants who want to accept Bitcoin without operating their own payment infrastructure.
+- **BTCPay Server** — for merchants who run their own BTCPay Server and want to connect it to Shopware.
 
-![](https://coinsnap.io/wp-content/uploads/2023/11/Screenshot-2024-05-27-at-08.16.52.png)
+BTCPay Server support was reintroduced in version 1.1.0 and includes API-key authorization, connection testing, Bitcoin and Lightning payment methods, and webhook routing.
 
-Then enter the Coinsnap API key and the Coinsnap store ID that you copied from the Coinsnap backend into Shopware.
+## Installation
 
-![](https://coinsnap.io/wp-content/uploads/2023/09/coinsnap-for-shopware-1.jpg)
+### Install from Shopware Extensions
 
-### Shopware payment methods settings ###
+The recommended installation method is through Shopware Extensions. After installation, activate the extension and open its configuration in the Shopware administration.
 
-In the Settings section, you can navigate to the payment methods to change the notes for the various payment methods. Access is via the Settings menu, which also contains the Payment methods section.
+Follow the step-by-step [Shopware Bitcoin User Guide](https://www.coinsnap.io/user-guides/shopware-bitcoin-user-guide/) for installation, connection and checkout configuration.
 
-![](https://coinsnap.io/wp-content/uploads/2023/09/Screenshot-2023-09-10-at-12.26.46.png)
+### Install from GitHub
 
-In addition to the standard payment options, Bitcoin and Lightning payment methods are also listed here, which are highlighted in blue when activated. You have the option of displaying the Bitcoin and Lightning payment methods separately or as a joint payment method. We recommend using it as a common payment method.
+Developers can also download the source code from this repository and install the extension in their Shopware environment.
 
-![](https://coinsnap.io/wp-content/uploads/2023/09/Screenshot-2023-09-10-at-12.27.30.png)
-![](https://coinsnap.io/wp-content/uploads/2023/09/Screenshot-2023-09-10-at-12.27.37.png)
+After installation:
 
-The end customer is then shown a QR code containing both Bitcoin and Lightning.
-Regardless of whether the user uses a Lightning or a Bitcoin wallet, payment is possible and unwanted terminations can be avoided.
+1. Open the Coinsnap extension configuration.
+2. Enter your **Coinsnap Store ID** and **API key**.
+3. Test the connection.
+4. Enable the Coinsnap payment method.
+5. Add the payment method to the relevant Shopware sales channel.
+6. Perform a test transaction before going live.
 
-![](https://coinsnap.io/wp-content/uploads/2023/09/Screenshot-2023-09-10-at-12.28.28.png)
+## BTCPay Server configuration
 
-Individual configurations can be made using the “Edit details” option. This can be used to change the display for the payer, e.g. to “Bitcoin” in our example.
+If you prefer to use your own BTCPay Server:
 
-The order of the payment methods displayed, the descriptive text and the associated logo can also be customized. It is recommended to activate the function “Allow change of payment method after completion of the order”.
+1. Enter your BTCPay Server URL in the extension configuration.
+2. Authorize the required API key on your BTCPay Server.
+3. Test the connection.
+4. Enable the available BTCPay Bitcoin and/or Lightning payment methods.
+5. Add the desired methods to your Shopware sales channel.
 
-If someone chooses Bitcoin as a payment method but later decides against it, they can easily switch to another option.
+## Resources
 
-### Shopware sales channel settings ###
+- [Coinsnap for Shopware product page](https://coinsnap.io/shop-systems/shopware/)
+- [Shopware Bitcoin User Guide](https://www.coinsnap.io/user-guides/shopware-bitcoin-user-guide/)
+- [Coinsnap Wallet](https://coinsnap.io/wallet/)
+- [Coinsnap API documentation](https://docs.coinsnap.io/)
+- [Coinsnap merchant account](https://app.coinsnap.io/register)
+- [Coinsnap website](https://coinsnap.io/)
+- [Telegram community and support](https://t.me/coinsnap)
 
-Within the sales channel, the configuration options for payment and shipping can be found under General basic settings, followed by Payment methods.
+> **Brand note:** Coinsnap is Bitcoin payment software for merchants and is not the provider of the similarly named coin identifier app "CoinSnap".
 
-Here you can select Bitcoin and Lightning as your payment method. As soon as this is done, these payment methods are activated and can be used in the store.
+## Frequently Asked Questions
 
-![](https://coinsnap.io/wp-content/uploads/2023/09/shopware-payment-and-shipping.png)
+### What are the requirements for accepting Bitcoin in my Shopware store?
+
+For the current plugin release you need a Shopware 6.7 store and either a Coinsnap merchant account or your own BTCPay Server. When using Coinsnap, you do not need to operate your own Lightning node or Bitcoin payment server.
+
+### Can customers pay with both Lightning and Bitcoin on-chain?
+
+Yes. Coinsnap supports Bitcoin payments via both the Lightning Network and Bitcoin on-chain.
+
+### Which Bitcoin or Lightning wallets can I use?
+
+You can use a compatible Bitcoin or Lightning wallet as your settlement wallet. One option is the [Coinsnap Wallet](https://coinsnap.io/wallet/), which combines a self-custodial Bitcoin wallet with merchant and point-of-sale functionality.
+
+Other compatible wallets may include solutions such as Wallet of Satoshi, Blink and Zeus, depending on the settlement setup you choose.
+
+### Does Coinsnap hold my Bitcoin?
+
+No. Coinsnap is non-custodial and does not hold or manage merchant funds. Payments are sent to the merchant's configured wallet or, if selected, converted and settled through a supported off-ramp.
+
+### Can I use my own BTCPay Server instead of Coinsnap?
+
+Yes. The Shopware module supports BTCPay Server for merchants who prefer a self-hosted Bitcoin payment infrastructure.
+
+### Do I need technical knowledge to install the module?
+
+No advanced technical knowledge is required for the standard Coinsnap setup. The module can be installed through Shopware Extensions, connected with your Coinsnap credentials and enabled as a Shopware payment method.
+
+### Can I receive Bitcoin sales in my bank account?
+
+Coinsnap supports integrations with off-ramp partners that can convert Bitcoin payments and settle the proceeds to a bank account, subject to the selected provider's availability and conditions.
+
+### Is the module available worldwide?
+
+Coinsnap is designed for merchants worldwide. Bitcoin and Lightning payments can be accepted from customers globally, subject to any legal or service restrictions that may apply in the merchant's jurisdiction.
+
+### Where can I get support?
+
+Use the support area in your Coinsnap merchant account, consult the [Shopware Bitcoin User Guide](https://www.coinsnap.io/user-guides/shopware-bitcoin-user-guide/), or join the official [Coinsnap Telegram channel](https://t.me/coinsnap).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
