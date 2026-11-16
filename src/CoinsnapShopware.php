@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware;
 
+use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -112,6 +113,8 @@ class CoinsnapShopware extends Plugin
                 return ['id' => $id];
             }, $idSearchResult->getIds());
             $systemConfigRepository->delete($ids, Context::createDefaultContext());
+
+            $this->container->get(Connection::class)->executeStatement('DROP TABLE IF EXISTS `coinsnap_processed_invoice`');
         }
     }
 

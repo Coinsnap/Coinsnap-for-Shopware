@@ -14,6 +14,7 @@ namespace Coinsnap\Shopware\PaymentHandler;
 
 use Coinsnap\Shopware\Client\ClientInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
+use Coinsnap\Shopware\Order\OrderService;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
@@ -34,6 +35,7 @@ abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
     protected ConfigurationService $configurationService;
     protected OrderTransactionStateHandler $transactionStateHandler;
     protected EntityRepository $orderTransactionRepository;
+    protected OrderService $orderService;
     protected LoggerInterface $logger;
 
     public function __construct(
@@ -41,12 +43,14 @@ abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
         ConfigurationService $configurationService,
         OrderTransactionStateHandler $transactionStateHandler,
         EntityRepository $orderTransactionRepository,
+        OrderService $orderService,
         LoggerInterface $logger
     ) {
         $this->client = $client;
         $this->configurationService = $configurationService;
         $this->transactionStateHandler = $transactionStateHandler;
         $this->orderTransactionRepository = $orderTransactionRepository;
+        $this->orderService = $orderService;
         $this->logger = $logger;
     }
 
@@ -118,6 +122,19 @@ abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
         $base = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
 
         return $base . '/coinsnap/payment-return/' . $orderTransaction->getId();
+    }
+
+    // Returns the checkout link, after recording the invoice so only its webhooks can pay this transaction.
+    protected function checkoutLinkFrom(array $response, OrderTransactionEntity $orderTransaction, Context $context): string
+    {
+        if (empty($response['checkoutLink']) || empty($response['id']) || !is_string($response['id'])) {
+            $this->logger->error('The payment gateway did not return an invoice for order ' . $orderTransaction->getOrder()?->getOrderNumber());
+            throw new \RuntimeException('The payment gateway did not return a checkout link.');
+        }
+
+        $this->orderService->rememberInvoiceId($orderTransaction, $response['id'], $context);
+
+        return $response['checkoutLink'];
     }
 
     abstract public function sendReturnUrlToCheckout(PaymentTransactionStruct $transaction, Context $context): ?string;

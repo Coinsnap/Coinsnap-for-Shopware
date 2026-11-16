@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\Configuration;
 
+use Coinsnap\Shopware\Client\ApiRequestException;
 use Coinsnap\Shopware\Client\ClientInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
 use Coinsnap\Shopware\Webhook\WebhookServiceInterface;
@@ -58,8 +59,9 @@ class BTCPayConfigurationController extends ConfigurationController
             $this->checkEnabledPaymentMethodsBTCPayStore($context);
             return new JsonResponse(['success' => true]);
         } catch (\Exception $e) {
+            // The raw API error can echo request details, so the admin gets a generic message.
             $this->configurationService->setSetting('btcpayIntegrationStatus', false);
-            return new JsonResponse(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+            return new JsonResponse(['success' => false, 'message' => 'Could not connect to BTCPay Server. Check the server URL and API key.']);
         }
     }
 
@@ -88,21 +90,32 @@ class BTCPayConfigurationController extends ConfigurationController
             return new RedirectResponse($redirectUrl);
         }
 
-        $body = $request->request->all();
-        $apiKey = $body['apiKey'] ?? '';
-        $permission = $body['permissions'][0] ?? '';
+        $apiKey = $request->request->get('apiKey');
+        if (!is_string($apiKey) || !preg_match('/^[A-Za-z0-9]+$/', $apiKey)) {
+            return new RedirectResponse($redirectUrl);
+        }
 
-        // Reject anything that doesn't look like a BTCPay key or a
-        // "scope:storeId" permission before persisting it.
-        if (!is_string($apiKey) || !preg_match('/^[A-Za-z0-9]+$/', $apiKey)
-            || !is_string($permission) || !preg_match('/^[a-z0-9.]+:[A-Za-z0-9]+$/', $permission)) {
+        // Permissions and store come from BTCPay itself, never from the POST.
+        $storeId = BTCPayKeyPolicy::storeIdFor($this->keyPermissions($apiKey));
+        if ($storeId === null) {
             return new RedirectResponse($redirectUrl);
         }
 
         $this->configurationService->setSetting('btcpayApiKey', $apiKey);
-        $this->configurationService->setSetting('btcpayServerStoreId', explode(':', $permission)[1]);
+        $this->configurationService->setSetting('btcpayServerStoreId', $storeId);
 
         return new RedirectResponse($redirectUrl);
+    }
+
+    private function keyPermissions(string $apiKey): array
+    {
+        try {
+            $key = $this->client->sendGetRequest('/api/v1/api-keys/current', ['Authorization' => 'token ' . $apiKey]);
+        } catch (ApiRequestException $e) {
+            return [];
+        }
+
+        return is_array($key['permissions'] ?? null) ? $key['permissions'] : [];
     }
 
     /**

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\Util\Log;
 
+use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
 
@@ -26,7 +27,7 @@ class LoggerFactory {
 
     public function createLogger(): Logger {
         $logger = new Logger('coinsnap_logger');
-        $handler = new RotatingFileHandler($this->logPath, $this->rotationCount);
+        $handler = new RotatingFileHandler($this->logPath, $this->rotationCount, Level::Info);
         $logger->pushHandler($handler);
 
         return $logger;

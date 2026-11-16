@@ -48,12 +48,7 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
             ]
         );
 
-        // A null link reads as "paid, no redirect" in Shopware; fail instead.
-        if (empty($response['checkoutLink'])) {
-            $this->logger->error('Coinsnap did not return a checkout link for order ' . $order->getOrderNumber());
-            throw new \RuntimeException('The payment gateway did not return a checkout link.');
-        }
-
-        return $response['checkoutLink'];
+        // A null link reads as "paid, no redirect" in Shopware, so a missing one throws.
+        return $this->checkoutLinkFrom($response, $orderTransaction, $context);
     }
 }

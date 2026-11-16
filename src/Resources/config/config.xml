@@ -19,11 +19,6 @@
             <label>Webhook ID</label>
             <disabled>true</disabled>
         </input-field>
-        <input-field type="password">
-            <name>coinsnapWebhookSecret</name>
-            <disabled>true</disabled>
-            <label>Webhook secret</label>
-        </input-field>
         <input-field type="checkbox">
             <name>coinsnapIntegrationStatus</name>
             <label>Connected to Coinsnap</label>
@@ -57,11 +52,6 @@
         <input-field>
             <name>btcpayWebhookId</name>
             <label>Webhook ID</label>
-            <disabled>true</disabled>
-        </input-field>
-        <input-field type="password">
-            <name>btcpayWebhookSecret</name>
-            <label>Webhook secret</label>
             <disabled>true</disabled>
         </input-field>
         <input-field type="checkbox">
