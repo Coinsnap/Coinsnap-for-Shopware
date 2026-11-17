@@ -26,6 +26,15 @@ class ProcessedInvoices
         $this->connection = $connection;
     }
 
+    // True when any invoice already marked this transaction paid.
+    public function transactionWasPaid(string $transactionId): bool
+    {
+        return $this->connection->fetchOne(
+            'SELECT 1 FROM `' . self::TABLE . '` WHERE `transaction_id` = :transactionId LIMIT 1',
+            ['transactionId' => $transactionId]
+        ) !== false;
+    }
+
     // Runs $markPaid once per invoice; returns false when the invoice was already handled.
     public function markPaidOnce(string $invoiceId, string $transactionId, callable $markPaid): bool
     {

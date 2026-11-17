@@ -12,6 +12,12 @@ Security release.
 - Log only the method, path and status of API calls, at INFO level and above. API responses, invoices and customer data are no longer written to the log.
 - Log every rejected webhook with a fixed reason (bad signature, stale timestamp, forged status, amount mismatch), at most 10 lines a minute.
 - Hide the webhook secrets from the settings page and return generic connection errors.
+- Store the webhook secrets outside the settings domain, so the settings page no longer loads them into the admin browser (moved by a migration).
+- Changing the BTCPay Server URL without entering a new API key removes the stored key and webhook, so the old key is never sent to the new server.
+- "Test connection" for BTCPay refuses a pasted API key that is not limited to the configured store; the connect page asks BTCPay for a fixed permission list (`strict=true`).
+- Orders created before 1.2.0 (no invoice record) can be paid by webhook only for one day after the upgrade.
+- Once an invoice paid a transaction, a later Expired or Invalid invoice of the same transaction changes nothing, even if its state was changed by hand.
+- Compare Coinsnap invoices using `invoiceAmount` (fallback `fiatAmount`); log BTCPay invoices settled by hand as INFO, not as forged; log webhooks without a known signature header.
 
 # 1.1.1
 - Fix plugin update failing on Shopware 6.7 with "SVG files with active content are not allowed" by cleaning the payment icons to Shopware's passive-SVG allowlist (remove DOCTYPE declarations, editor metadata and namespaces, and unused filter data). Icon rendering is unchanged.

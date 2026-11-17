@@ -25,11 +25,13 @@ class WebhookRouter
 {
     private WebhookFactory $webhookFactory;
     private ConfigurationService $configurationService;
+    private WebhookLog $webhookLog;
 
-    public function __construct(WebhookFactory $webhookFactory, ConfigurationService $configurationService)
+    public function __construct(WebhookFactory $webhookFactory, ConfigurationService $configurationService, WebhookLog $webhookLog)
     {
         $this->webhookFactory = $webhookFactory;
         $this->configurationService = $configurationService;
+        $this->webhookLog = $webhookLog;
     }
     public function route(Request $request, Context $context): Response
     {
@@ -42,6 +44,8 @@ class WebhookRouter
         // Unidentified, ambiguous, or not-connected provider. Respond with a
         // generic 401 rather than throwing (which would surface as a 500 on
         // this unauthenticated route), and never reveal which check failed.
+        $this->webhookLog->security('unknown', WebhookSignature::REASON_BAD_SIGNATURE);
+
         return new Response(
             json_encode(['error' => 'Unauthorized']),
             Response::HTTP_UNAUTHORIZED,
@@ -61,9 +65,9 @@ class WebhookRouter
         }
 
         if ($hasBtcpay) {
-            return empty($this->configurationService->getSetting('btcpayWebhookSecret')) ? null : 'btcpay';
+            return empty($this->configurationService->getInternal('btcpayWebhookSecret')) ? null : 'btcpay';
         }
 
-        return empty($this->configurationService->getSetting('coinsnapWebhookSecret')) ? null : 'coinsnap';
+        return empty($this->configurationService->getInternal('coinsnapWebhookSecret')) ? null : 'coinsnap';
     }
 }
