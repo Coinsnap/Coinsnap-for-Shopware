@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2024 Coinsnap
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
+ *
+ * Author: Coinsnap<dev@coinsnap.io>
+ */
+
+namespace Coinsnap\Shopware\Webhook;
+
+use Doctrine\DBAL\Connection;
+
+// The primary key on invoice_id lets only one webhook per invoice mark a transaction paid.
+class ProcessedInvoices
+{
+    public const TABLE = 'coinsnap_processed_invoice';
+
+    private Connection $connection;
+
+    public function __construct(Connection $connection)
+    {
+        $this->connection = $connection;
+    }
+
+    // True when any invoice already marked this transaction paid.
+    public function transactionWasPaid(string $transactionId): bool
+    {
+        return $this->connection->fetchOne(
+            'SELECT 1 FROM `' . self::TABLE . '` WHERE `transaction_id` = :transactionId LIMIT 1',
+            ['transactionId' => $transactionId]
+        ) !== false;
+    }
+
+    // Runs $markPaid once per invoice; returns false when the invoice was already handled.
+    public function markPaidOnce(string $invoiceId, string $transactionId, callable $markPaid): bool
+    {
+        $this->connection->beginTransaction();
+        try {
+            $inserted = $this->connection->executeStatement(
+                'INSERT IGNORE INTO `' . self::TABLE . '` (`invoice_id`, `transaction_id`, `created_at`) VALUES (:invoiceId, :transactionId, NOW(3))',
+                ['invoiceId' => $invoiceId, 'transactionId' => $transactionId]
+            );
+            if ($inserted === 0) {
+                $this->connection->rollBack();
+
+                return false;
+            }
+
+            $markPaid();
+            $this->connection->commit();
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
+    }
+}

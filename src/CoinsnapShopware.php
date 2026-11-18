@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware;
 
+use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -30,7 +31,8 @@ use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Content\Media\MediaEntity;
 use Shopware\Core\Content\Media\File\FileSaver;
 use Coinsnap\Shopware\PaymentMethod\PaymentMethods;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\OrFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Coinsnap\Shopware\PaymentMethod\CoinsnapBitcoinLightningPaymentMethod;
 use Coinsnap\Shopware\PaymentMethod\BTCPayBitcoinPaymentMethod;
 use Coinsnap\Shopware\PaymentMethod\BTCPayLightningPaymentMethod;
@@ -103,15 +105,18 @@ class CoinsnapShopware extends Plugin
 
             $systemConfigRepository = $this->container->get('system_config.repository');
             $criteria = (new Criteria())
-                ->addFilter(
-                    new ContainsFilter('configurationKey', 'CoinsnapShopware.config')
-                );
+                ->addFilter(new OrFilter([
+                    new PrefixFilter('configurationKey', 'CoinsnapShopware.config.'),
+                    new PrefixFilter('configurationKey', 'CoinsnapShopware.internal.'),
+                ]));
             $idSearchResult = $systemConfigRepository->searchIds($criteria, Context::createDefaultContext());
 
             $ids = \array_map(static function ($id) {
                 return ['id' => $id];
             }, $idSearchResult->getIds());
             $systemConfigRepository->delete($ids, Context::createDefaultContext());
+
+            $this->container->get(Connection::class)->executeStatement('DROP TABLE IF EXISTS `coinsnap_processed_invoice`');
         }
     }
 

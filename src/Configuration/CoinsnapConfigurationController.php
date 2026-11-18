@@ -56,8 +56,9 @@ class CoinsnapConfigurationController extends ConfigurationController
             $this->configurationService->setSetting('coinsnapIntegrationStatus', true);
             return new JsonResponse(['success' => true]);
         } catch (\Exception $e) {
+            // The raw API error can echo request details, so the admin gets a generic message.
             $this->configurationService->setSetting('coinsnapIntegrationStatus', false);
-            return new JsonResponse(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+            return new JsonResponse(['success' => false, 'message' => 'Could not connect to Coinsnap. Check the store ID and API key.']);
         }
     }
 }

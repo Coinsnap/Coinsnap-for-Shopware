@@ -39,103 +39,48 @@ class AbstractClient
         return $this->request(Request::METHOD_POST, $uri, $options);
     }
 
+    // Path without store, invoice or webhook IDs, and without the query.
+    private static function pathForLog(string $uri): string
+    {
+        $path = (string) parse_url($uri, PHP_URL_PATH);
+        return (string) preg_replace('#/(stores|invoices|webhooks|payment-methods)/[^/]+#', '/$1/{id}', $path);
+    }
+
+    // Logs method, path and status only: bodies and options can carry secrets or customer data.
     private function request(string $method, string $uri, array $options = []): array
     {
-
         try {
             $response = $this->client->request($method, $uri, $options);
-            $body = $response->getBody()->getContents();
-            $this->logger->debug(
-                '{method} {uri} with following response: {response}',
-                [
-                    'method' => \mb_strtoupper($method),
-                    'uri' => $uri,
-                    'response' => $this->redactBody($body),
-                ]
-            );
-            if ($body === '' || $body === null) {
-                return [];
-            }
-
-            $decodedBody = \json_decode($body, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->logger->error('Failed to decode JSON response: ' . json_last_error_msg());
-
-                throw new \Exception('Failed to decode JSON response: ' . json_last_error_msg());
-            }
-
-            // Return the decoded response or an empty array
-            return is_array($decodedBody) ? $decodedBody : [];
         } catch (RequestException $e) {
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                $body = $response->getBody()->getContents();
-                $statusCode = $response->getStatusCode();
-                $reasonPhrase = $response->getReasonPhrase();
-                $method = $e->getRequest()->getMethod();
-                $message = $e->getMessage();
+            $status = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 0;
+            $this->logger->error('API request failed: {method} {uri} status {status}', [
+                'method' => $method,
+                'uri' => self::pathForLog($uri),
+                'status' => $status,
+            ]);
 
-                $this->logger->error(
-                    'Guzzle request failed: {message} {status} {reason} - {method} {uri} with options: {options} and response: {body}',
-                    [
-                        'status' => $statusCode,
-                        'reason' => $reasonPhrase,
-                        'method' => $method,
-                        'uri' => $uri,
-                        'options' => $this->redactOptions($options),
-                        'message' => $message,
-                        'body' => $this->redactBody($body)
-                    ]
-                );
-
-                throw new \Exception($reasonPhrase, $statusCode);
-            }
-
-            $this->logger->error('Guzzle request failed: Unknown error');
-            throw new \Exception('Unknown error');
+            throw new ApiRequestException('API request failed with status ' . $status, $status);
         } catch (GuzzleException $e) {
-            // Connection-level errors (timeout, DNS, refused) carry no response.
-            $this->logger->error('Guzzle request failed: ' . $e->getMessage());
-            throw new \Exception($e->getMessage());
-        }
-    }
+            $this->logger->error('API request failed: {method} {uri} could not connect', [
+                'method' => $method,
+                'uri' => self::pathForLog($uri),
+            ]);
 
-    // Mask credential headers before request options are logged.
-    private function redactOptions(array $options): array
-    {
-        if (!isset($options['headers']) || !is_array($options['headers'])) {
-            return $options;
+            throw new ApiRequestException('API server unreachable', 0);
         }
 
-        $sensitive = ['authorization', 'token', 'x-coinsnap-sig', 'btcpay-sig'];
-        foreach ($options['headers'] as $name => $value) {
-            if (in_array(strtolower((string) $name), $sensitive, true)) {
-                $options['headers'][$name] = '***redacted***';
-            }
+        $body = $response->getBody()->getContents();
+        if ($body === '') {
+            return [];
         }
 
-        return $options;
-    }
+        $decodedBody = \json_decode($body, true);
+        if (!is_array($decodedBody)) {
+            $this->logger->error('API returned invalid JSON: {method} {uri}', ['method' => $method, 'uri' => self::pathForLog($uri)]);
 
-    // Mask credential fields (e.g. the webhook secret) in logged response bodies.
-    private function redactBody(?string $body): ?string
-    {
-        if ($body === null || $body === '') {
-            return $body;
+            throw new ApiRequestException('API returned invalid JSON', 502);
         }
 
-        $decoded = json_decode($body, true);
-        if (!is_array($decoded)) {
-            return $body;
-        }
-
-        $sensitive = ['secret', 'apiKey', 'token'];
-        foreach ($decoded as $key => $value) {
-            if (in_array($key, $sensitive, true)) {
-                $decoded[$key] = '***redacted***';
-            }
-        }
-
-        return json_encode($decoded);
+        return $decodedBody;
     }
 }

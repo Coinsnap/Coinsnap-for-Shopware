@@ -12,45 +12,27 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\Webhook\Factory;
 
-use Coinsnap\Shopware\Client\ClientInterface;
-use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler;
-use Psr\Log\LoggerInterface;
-use Coinsnap\Shopware\Configuration\ConfigurationService;
-use Coinsnap\Shopware\Webhook\WebhookServiceInterface;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Coinsnap\Shopware\Order\OrderService;
-use Coinsnap\Shopware\Webhook\CoinsnapWebhookService;
 use Coinsnap\Shopware\Webhook\BTCPayWebhookService;
+use Coinsnap\Shopware\Webhook\CoinsnapWebhookService;
+use Coinsnap\Shopware\Webhook\WebhookServiceInterface;
 
 class WebhookFactory
 {
-  private ClientInterface $coinsnapClient;
-  private ClientInterface $btcpayClient;
-  private ConfigurationService $configurationService;
-  private OrderTransactionStateHandler $transactionStateHandler;
-  private OrderService $orderService;
-  private EntityRepository $orderRepository;
-  private LoggerInterface $logger;
+    private CoinsnapWebhookService $coinsnapWebhookService;
+    private BTCPayWebhookService $btcpayWebhookService;
 
-  public function __construct(ClientInterface $coinsnapClient, ClientInterface $btcpayClient, ConfigurationService $configurationService, OrderTransactionStateHandler $transactionStateHandler, OrderService $orderService, EntityRepository $orderRepository, LoggerInterface $logger)
-  {
-    $this->coinsnapClient = $coinsnapClient;
-    $this->btcpayClient = $btcpayClient;
-    $this->configurationService = $configurationService;
-    $this->transactionStateHandler = $transactionStateHandler;
-    $this->orderService = $orderService;
-    $this->orderRepository = $orderRepository;
-    $this->logger = $logger;
-  }
+    public function __construct(CoinsnapWebhookService $coinsnapWebhookService, BTCPayWebhookService $btcpayWebhookService)
+    {
+        $this->coinsnapWebhookService = $coinsnapWebhookService;
+        $this->btcpayWebhookService = $btcpayWebhookService;
+    }
 
-  public function create(string $provider): WebhookServiceInterface
-  {
-    if ($provider === 'coinsnap') {
-      return new CoinsnapWebhookService($this->coinsnapClient, $this->configurationService, $this->transactionStateHandler, $this->orderService, $this->orderRepository, $this->logger);
+    public function create(string $provider): WebhookServiceInterface
+    {
+        return match ($provider) {
+            'coinsnap' => $this->coinsnapWebhookService,
+            'btcpay' => $this->btcpayWebhookService,
+            default => throw new \RuntimeException('Unsupported webhook provider.'),
+        };
     }
-    if ($provider === 'btcpay') {
-      return new BTCPayWebhookService($this->btcpayClient, $this->configurationService, $this->transactionStateHandler, $this->orderService, $this->orderRepository, $this->logger);
-    }
-    throw new \RuntimeException('Unsupported webhook provider.');
-  }
 }

@@ -16,6 +16,7 @@ use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEnti
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,6 +41,9 @@ class PaymentReturnController extends AbstractController
     public function paymentReturn(string $transactionId, Request $request): RedirectResponse
     {
         $fallback = $request->getSchemeAndHttpHost();
+        if (!Uuid::isValid($transactionId)) {
+            return new RedirectResponse($fallback);
+        }
 
         $transaction = $this->orderTransactionRepository
             ->search(new Criteria([$transactionId]), Context::createDefaultContext())

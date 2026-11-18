@@ -16,7 +16,10 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class ConfigurationService
 {
-    protected const DOMAIN = 'CoinsnapShopware.config.';
+    public const DOMAIN = 'CoinsnapShopware.config.';
+    // Values only the server uses (webhook secrets, upgrade markers). The settings page loads
+    // every key under DOMAIN into the admin browser, so these live under their own prefix.
+    public const INTERNAL_DOMAIN = 'CoinsnapShopware.internal.';
     /**
      * @var SystemConfigService
      */
@@ -37,6 +40,14 @@ class ConfigurationService
     public function setSetting(string $setting, $value, ?string $salesChannelId = null)
     {
         return $this->systemConfigService->set(self::DOMAIN . $setting, $value, $salesChannelId);
+    }
+    public function getInternal(string $setting)
+    {
+        return $this->systemConfigService->get(self::INTERNAL_DOMAIN . $setting);
+    }
+    public function setInternal(string $setting, $value)
+    {
+        return $this->systemConfigService->set(self::INTERNAL_DOMAIN . $setting, $value);
     }
     public function getShopName(?string $salesChannelId)
     {

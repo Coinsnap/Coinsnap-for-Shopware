@@ -12,39 +12,61 @@ declare(strict_types=1);
 
 namespace Coinsnap\Shopware\Order;
 
+use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\Uuid\Uuid;
 
-/**
- * Class OrderService
- * @package Coinsnap\Shopware
- */
 class OrderService
 {
-    private EntityRepository $orderRepository;
+    public const INVOICE_IDS_FIELD = 'coinsnapInvoiceIds';
 
-    public function __construct(EntityRepository $orderRepository)
+    private EntityRepository $orderRepository;
+    private EntityRepository $orderTransactionRepository;
+
+    public function __construct(EntityRepository $orderRepository, EntityRepository $orderTransactionRepository)
     {
         $this->orderRepository = $orderRepository;
+        $this->orderTransactionRepository = $orderTransactionRepository;
     }
 
-    public function getId(string $orderNumber, Context $context): ?string
+    // The transaction with its order, currency and current state, or null.
+    public function getTransaction(string $transactionId, Context $context): ?OrderTransactionEntity
     {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('orderNumber', $orderNumber));
-        return $this->orderRepository->searchIds($criteria, $context)->firstId();
+        if (!Uuid::isValid($transactionId)) {
+            return null;
+        }
+
+        $criteria = new Criteria([$transactionId]);
+        $criteria->addAssociation('order.currency');
+        $criteria->addAssociation('stateMachineState');
+        $transaction = $this->orderTransactionRepository->search($criteria, $context)->first();
+
+        return $transaction instanceof OrderTransactionEntity ? $transaction : null;
     }
 
-    // Technical name of the transaction's current state, or null.
-    public function getTransactionState(string $orderId, string $transactionId, Context $context): ?string
+    // Records every invoice created for a transaction; a customer can start a payment twice.
+    public function rememberInvoiceId(OrderTransactionEntity $transaction, string $invoiceId, Context $context): void
     {
-        $criteria = new Criteria([$orderId]);
-        $criteria->addAssociation('transactions.stateMachineState');
-        $order = $this->orderRepository->search($criteria, $context)->first();
-        $transaction = $order?->getTransactions()?->get($transactionId);
+        $known = $transaction->getCustomFields()[self::INVOICE_IDS_FIELD] ?? [];
+        $known = is_array($known) ? $known : [];
+        $known[] = $invoiceId;
 
-        return $transaction?->getStateMachineState()?->getTechnicalName();
+        $this->orderTransactionRepository->update([[
+            'id' => $transaction->getId(),
+            'customFields' => [self::INVOICE_IDS_FIELD => array_values(array_unique($known))],
+        ]], $context);
+    }
+
+    public function setOrderStatus(string $orderId, string $invoiceId, string $status, Context $context): void
+    {
+        $this->orderRepository->upsert([[
+            'id' => $orderId,
+            'customFields' => [
+                'coinsnapInvoiceId' => $invoiceId,
+                'coinsnapOrderStatus' => $status,
+            ],
+        ]], $context);
     }
 }
