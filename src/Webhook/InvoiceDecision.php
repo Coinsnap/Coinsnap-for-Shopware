@@ -22,6 +22,8 @@ class InvoiceDecision
     public const NONE = 'none';
     // Settled, but not for this transaction's amount and currency (or settled by hand).
     public const MISMATCH = 'mismatch';
+    // BTCPay: settled by hand by the merchant ("Marked"); no payment proves it.
+    public const MARKED = 'marked';
 
     public static function coinsnap(array $invoice, float $price, string $currency): string
     {
@@ -29,7 +31,8 @@ class InvoiceDecision
         $additionalStatus = (string) ($invoice['additionalStatus'] ?? '');
 
         return match ($status) {
-            'Settled' => self::pays($invoice['fiatAmount'] ?? null, $invoice['currency'] ?? null, $price, $currency)
+            // amount is in sats; invoiceAmount (older API: fiatAmount) is in the invoice currency.
+            'Settled' => self::pays(self::coinsnapInvoiceAmount($invoice), $invoice['currency'] ?? null, $price, $currency)
                 ? self::PAID
                 : self::MISMATCH,
             'Processing' => self::PROCESS,
@@ -46,10 +49,13 @@ class InvoiceDecision
 
         if ($status === 'Settled') {
             // Marked: the merchant settled it by hand in BTCPay, no payment proves it.
-            $paid = $additionalStatus !== 'Marked'
-                && self::pays($invoice['amount'] ?? null, $invoice['currency'] ?? null, $price, $currency);
+            if ($additionalStatus === 'Marked') {
+                return self::MARKED;
+            }
 
-            return $paid ? self::PAID : self::MISMATCH;
+            return self::pays($invoice['amount'] ?? null, $invoice['currency'] ?? null, $price, $currency)
+                ? self::PAID
+                : self::MISMATCH;
         }
 
         return match ($status) {
@@ -58,6 +64,17 @@ class InvoiceDecision
             'Invalid' => self::FAIL,
             default => self::NONE,
         };
+    }
+
+    private static function coinsnapInvoiceAmount(array $invoice): mixed
+    {
+        foreach (['invoiceAmount', 'fiatAmount'] as $field) {
+            if (isset($invoice[$field]) && $invoice[$field] !== '') {
+                return $invoice[$field];
+            }
+        }
+
+        return null;
     }
 
     private static function pays(mixed $invoiceAmount, mixed $invoiceCurrency, float $price, string $currency): bool

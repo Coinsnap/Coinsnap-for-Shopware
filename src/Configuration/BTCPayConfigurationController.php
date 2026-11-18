@@ -45,7 +45,16 @@ class BTCPayConfigurationController extends ConfigurationController
     public function verifyApiKey(Request $request, Context $context)
     {
         try {
-            $uri = '/api/v1/stores/' . $this->configurationService->getSetting('btcpayServerStoreId');
+            // A pasted key is checked like one from the connect flow: every permission must be
+            // a store permission limited to the configured store.
+            $storeId = (string) $this->configurationService->getSetting('btcpayServerStoreId');
+            $apiKey = (string) $this->configurationService->getSetting('btcpayApiKey');
+            if ($storeId === '' || BTCPayKeyPolicy::storeIdFor($this->keyPermissions($apiKey)) !== $storeId) {
+                $this->configurationService->setSetting('btcpayIntegrationStatus', false);
+                return new JsonResponse(['success' => false, 'message' => 'The API key must be limited to this store, with only the permissions the plugin needs. Use "Connect to BTCPay Server" to create one.']);
+            }
+
+            $uri = '/api/v1/stores/' . rawurlencode($storeId);
             $response = $this->client->sendGetRequest($uri);
             if (!is_array($response)) {
                 $this->configurationService->setSetting('btcpayIntegrationStatus', false);

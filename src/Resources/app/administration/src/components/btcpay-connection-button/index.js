@@ -164,7 +164,7 @@ Component.register("coinsnap-btcpay-buttons", {
           .then(() => {
             window.open(
               filteredUrl +
-                "/api-keys/authorize/?applicationName=CoinsnapShopwarePlugin&permissions=btcpay.store.cancreateinvoice&permissions=btcpay.store.canviewinvoices&permissions=btcpay.store.webhooks.canmodifywebhooks&permissions=btcpay.store.canviewstoresettings&selectiveStores=true&redirect=" +
+                "/api-keys/authorize/?applicationName=CoinsnapShopwarePlugin&permissions=btcpay.store.cancreateinvoice&permissions=btcpay.store.canviewinvoices&permissions=btcpay.store.webhooks.canmodifywebhooks&permissions=btcpay.store.canviewstoresettings&strict=true&selectiveStores=true&redirect=" +
                 redirectUrl,
               "_blank",
               "noopener",

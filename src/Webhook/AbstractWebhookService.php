@@ -109,7 +109,7 @@ abstract class AbstractWebhookService implements WebhookServiceInterface
             return false;
         }
 
-        $this->configurationService->setSetting($this->setting('webhookSecret'), $body['secret']);
+        $this->configurationService->setInternal($this->setting('webhookSecret'), $body['secret']);
         $this->configurationService->setSetting($this->setting('webhookId'), $body['id']);
         $this->logger->info($this->provider() . ' webhook created');
 
@@ -138,7 +138,7 @@ abstract class AbstractWebhookService implements WebhookServiceInterface
 
     public function process(Request $request, Context $context): Response
     {
-        $secret = (string) $this->configurationService->getSetting($this->setting('webhookSecret'));
+        $secret = (string) $this->configurationService->getInternal($this->setting('webhookSecret'));
         $problem = $this->signatureProblem($request, $secret);
         if ($problem !== null) {
             $this->webhookLog->security($this->provider(), $problem);
@@ -181,6 +181,13 @@ abstract class AbstractWebhookService implements WebhookServiceInterface
             (string) $order?->getCurrency()?->getIsoCode()
         );
 
+        if ($decision === InvoiceDecision::MARKED) {
+            // Settled by hand in BTCPay: not a forgery, but no payment proves it either.
+            $this->webhookLog->info($this->provider(), 'marked by hand, not accepted', $invoiceId);
+
+            return new Response('', Response::HTTP_OK);
+        }
+
         if ($decision !== InvoiceDecision::PAID && ($claimsPaid || $decision === InvoiceDecision::MISMATCH)) {
             $this->webhookLog->security($this->provider(), $claimsPaid ? 'forged status' : 'amount mismatch', $invoiceId);
 
@@ -210,9 +217,17 @@ abstract class AbstractWebhookService implements WebhookServiceInterface
             return null;
         }
 
-        // Transactions from before 1.2.0 have no list; the amount check still applies to them.
+        // Transactions from before 1.2.0 have no list. They are accepted (with the amount check) only
+        // during a short window after the upgrade, while invoices opened before it can still be paid.
         $knownIds = $transaction->getCustomFields()[OrderService::INVOICE_IDS_FIELD] ?? null;
-        if (is_array($knownIds) && !in_array($invoiceId, $knownIds, true)) {
+        $known = is_array($knownIds)
+            ? in_array($invoiceId, $knownIds, true)
+            : LegacyInvoiceWindow::accepts(
+                $transaction->getCreatedAt(),
+                (int) $this->configurationService->getInternal(LegacyInvoiceWindow::SETTING),
+                time()
+            );
+        if (!$known) {
             $this->webhookLog->security($this->provider(), 'invoice not created for this order', $invoiceId);
 
             return null;
@@ -234,6 +249,14 @@ abstract class AbstractWebhookService implements WebhookServiceInterface
 
         if ($decision === InvoiceDecision::PAID) {
             $this->markPaid($transaction, $state, $invoiceId, $context);
+
+            return;
+        }
+
+        // Paid is known from our own record, not from the state, which the merchant may have changed:
+        // once any invoice paid this transaction, another one expiring or failing changes nothing.
+        if ($this->processedInvoices->transactionWasPaid($transactionId)) {
+            $this->webhookLog->info($this->provider(), 'no change, already paid', $invoiceId);
 
             return;
         }
