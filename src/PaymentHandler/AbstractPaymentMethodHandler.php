@@ -14,6 +14,7 @@ namespace Coinsnap\Shopware\PaymentHandler;
 
 use Coinsnap\Shopware\Client\ClientInterface;
 use Coinsnap\Shopware\Configuration\ConfigurationService;
+use Coinsnap\Shopware\Order\InvoiceData;
 use Coinsnap\Shopware\Order\OrderService;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity;
@@ -22,6 +23,7 @@ use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler;
 use Shopware\Core\Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType;
 use Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct;
 use Shopware\Core\Checkout\Payment\PaymentException;
+use Shopware\Core\DevOps\Environment\EnvironmentHelper;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -84,14 +86,14 @@ abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
     }
 
     /**
-     * Loads the order transaction together with the order and currency
-     * associations the gateway call needs (amount, currency, order number).
+     * Loads the order transaction together with the order associations the
+     * gateway call needs (amount, currency, order number, buyer, items).
      */
     protected function loadOrderTransaction(string $orderTransactionId, Context $context): OrderTransactionEntity
     {
         $criteria = new Criteria([$orderTransactionId]);
         $criteria->addAssociation('order');
-        $criteria->addAssociation('order.currency');
+        $criteria->addAssociations(InvoiceData::ASSOCIATIONS);
 
         $orderTransaction = $this->orderTransactionRepository->search($criteria, $context)->first();
 
@@ -122,6 +124,39 @@ abstract class AbstractPaymentMethodHandler extends AbstractPaymentHandler
         $base = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
 
         return $base . '/coinsnap/payment-return/' . $orderTransaction->getId();
+    }
+
+    /**
+     * orderId, buyerEmail and metadata for the create-invoice request.
+     *
+     * @return array{orderId: string, buyerEmail?: string, metadata: array<string, mixed>}
+     */
+    protected function invoiceData(OrderTransactionEntity $orderTransaction): array
+    {
+        $order = $orderTransaction->getOrder();
+        if ($order === null) {
+            throw PaymentException::invalidTransaction($orderTransaction->getId());
+        }
+
+        return InvoiceData::fromOrder($order, $orderTransaction, self::adminUrl(), self::pluginVersion());
+    }
+
+    // Same base as Shopware's own admin links: APP_URL plus SHOPWARE_ADMINISTRATION_PATH_NAME.
+    private static function adminUrl(): string
+    {
+        $appUrl = rtrim((string) EnvironmentHelper::getVariable('APP_URL', ''), '/');
+        if ($appUrl === '') {
+            return '';
+        }
+
+        return $appUrl . '/' . trim((string) EnvironmentHelper::getVariable('SHOPWARE_ADMINISTRATION_PATH_NAME', 'admin'), '/');
+    }
+
+    private static function pluginVersion(): string
+    {
+        $composer = json_decode((string) @file_get_contents(dirname(__DIR__, 2) . '/composer.json'), true);
+
+        return is_array($composer) && is_string($composer['version'] ?? null) ? $composer['version'] : '';
     }
 
     // Returns the checkout link, after recording the invoice so only its webhooks can pay this transaction.
