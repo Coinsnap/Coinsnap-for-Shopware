@@ -31,17 +31,12 @@ class BTCPayBitcoinPaymentMethodHandler extends AbstractPaymentMethodHandler
         $redirectUrl = $this->buildGatewayRedirectUrl($orderTransaction, $returnUrl, $context);
 
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('btcpayServerStoreId') . '/invoices';
+        // orderId is the order number; the webhook matches on metadata transactionId and orderNumber.
         $response = $this->client->sendPostRequest(
             $uri,
-            [
+            $this->invoiceData($orderTransaction) + [
                 'amount' => $orderTransaction->getAmount()->getTotalPrice(),
                 'currency' => $order->getCurrency()->getIsoCode(),
-                'metadata' =>
-                [
-                    'orderNumber' => $order->getOrderNumber(),
-                    'orderId' => $orderTransaction->getOrderId(),
-                    'transactionId' => $orderTransaction->getId()
-                ],
                 'checkout' => [
                     'redirectURL' => $redirectUrl,
                     'redirectAutomatically' => true,

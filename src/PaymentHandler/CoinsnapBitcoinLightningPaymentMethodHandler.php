@@ -31,19 +31,13 @@ class CoinsnapBitcoinLightningPaymentMethodHandler extends AbstractPaymentMethod
         $redirectUrl = $this->buildGatewayRedirectUrl($orderTransaction, $returnUrl, $context);
 
         $uri = '/api/v1/stores/' . $this->configurationService->getSetting('coinsnapStoreId') . '/invoices';
+        // orderId is the order number; the webhook matches on metadata transactionId and orderNumber.
         $response = $this->client->sendPostRequest(
             $uri,
-            [
+            $this->invoiceData($orderTransaction) + [
                 'amount' => $orderTransaction->getAmount()->getTotalPrice(),
                 'currency' => $order->getCurrency()->getIsoCode(),
                 'referralCode' => 'DEV17612c35cd8c54d3fad381615',
-                'metadata' =>
-                [
-                    'orderNumber' => $order->getOrderNumber(),
-                    'orderId' => $orderTransaction->getOrderId(),
-                    'transactionId' => $orderTransaction->getId()
-                ],
-                'orderId' => $order->getOrderNumber(),
                 'redirectUrl' => $redirectUrl,
             ]
         );
